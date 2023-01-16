@@ -401,7 +401,7 @@ class MainCubit extends Cubit<MainState> {
         duration: duration,
         status: getStatusPomodoro(),
         round: round,
-        isStart: autoStart,
+        isStart: forceNext ? autoStart : false,
       ));
     }
   }
