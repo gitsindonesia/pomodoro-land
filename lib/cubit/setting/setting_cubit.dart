@@ -18,6 +18,8 @@ class SettingCubit extends Cubit<SettingState> {
           workspaces: [],
           loadingProjects: false,
           projects: [],
+          autoStartBreak: false,
+          autoStartPomodoro: false,
         ));
 
   final storage = SettingStorage();
@@ -35,6 +37,8 @@ class SettingCubit extends Cubit<SettingState> {
     final defaultPomodoro = await storage.readPomodoroDuration();
     final defaultShortBreak = await storage.readShortBreakDuration();
     final defaultLongBreak = await storage.readLongBreakDuration();
+    final autoStartBreak = await storage.readAutoStartBreak();
+    final autoStartPomodoro = await storage.readAutoStartPomodoro();
 
     controllerPomodoro.text = defaultPomodoro.inMinutes.toString();
     controllerShortBreak.text = defaultShortBreak.inMinutes.toString();
@@ -47,7 +51,12 @@ class SettingCubit extends Cubit<SettingState> {
     final projects = await storage.readProjectsClockify();
 
     controllerApiKeyClockify.text = apiKeyClockify ?? '';
-    emit(state.copyWith(workspaces: workspaces, projects: projects));
+    emit(state.copyWith(
+      workspaces: workspaces,
+      projects: projects,
+      autoStartBreak: autoStartBreak,
+      autoStartPomodoro: autoStartPomodoro,
+    ));
     emit(state.setUser(user: user));
     emit(state.setSelectedWorkspace(selectedWorkspace: selectedWorkspace));
   }
@@ -149,7 +158,18 @@ class SettingCubit extends Cubit<SettingState> {
       await storage.writeProjectsClockify(state.projects);
     }
 
+    await storage.writeAutoStartBreak(state.autoStartBreak);
+    await storage.writeAutoStartPomodoro(state.autoStartPomodoro);
+
     // ignore: use_build_context_synchronously
     Navigator.of(context).pop();
+  }
+
+  void onToggleAutoStartBreakChanged(bool autoStartBreak) async {
+    emit(state.copyWith(autoStartBreak: autoStartBreak));
+  }
+
+  void onToggleAutoStartPomodoroChanged(bool autoStartPomodoro) async {
+    emit(state.copyWith(autoStartPomodoro: autoStartPomodoro));
   }
 }

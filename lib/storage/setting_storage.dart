@@ -87,4 +87,18 @@ class SettingStorage {
     if (data == null) return null;
     return Project.fromJson(data);
   }
+
+  Future<void> writeAutoStartBreak(bool autoStart) =>
+      storage.write('auto_start_break', autoStart.toString());
+  Future<bool> readAutoStartBreak() async {
+    final data = await storage.read('auto_start_break');
+    return data == 'true';
+  }
+
+  Future<void> writeAutoStartPomodoro(bool autoStart) =>
+      storage.write('auto_start_pomodoro', autoStart.toString());
+  Future<bool> readAutoStartPomodoro() async {
+    final data = await storage.read('auto_start_pomodoro');
+    return data == 'true';
+  }
 }

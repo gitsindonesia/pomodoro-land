@@ -5,7 +5,6 @@ class MainState {
     required this.round,
     required this.duration,
     required this.isStart,
-    required this.isBreak,
     required this.todos,
     required this.history,
     this.focusTodo,
@@ -15,12 +14,12 @@ class MainState {
     required this.projects,
     this.selectedProject,
     required this.loadingAddTimeClockify,
+    required this.indexTabPomodoro,
   });
 
   final int round;
   final Duration duration;
   final bool isStart;
-  final bool isBreak;
   final List<Todo> todos;
   final List<History> history;
   final Todo? focusTodo;
@@ -30,13 +29,13 @@ class MainState {
   final List<Project> projects;
   final Project? selectedProject;
   final bool loadingAddTimeClockify;
+  final int indexTabPomodoro;
 
   MainState setFocusTodo(Todo? focusTodo) {
     return MainState(
       round: round,
       duration: duration,
       isStart: isStart,
-      isBreak: isBreak,
       todos: todos,
       history: history,
       status: status,
@@ -46,6 +45,7 @@ class MainState {
       projects: projects,
       selectedProject: selectedProject,
       loadingAddTimeClockify: loadingAddTimeClockify,
+      indexTabPomodoro: indexTabPomodoro,
     );
   }
 
@@ -54,7 +54,6 @@ class MainState {
       round: round,
       duration: duration,
       isStart: isStart,
-      isBreak: isBreak,
       todos: todos,
       history: history,
       status: status,
@@ -64,6 +63,7 @@ class MainState {
       projects: projects,
       selectedProject: selectedProject,
       loadingAddTimeClockify: loadingAddTimeClockify,
+      indexTabPomodoro: indexTabPomodoro,
     );
   }
 
@@ -71,7 +71,6 @@ class MainState {
     int? round,
     Duration? duration,
     bool? isStart,
-    bool? isBreak,
     List<Todo>? todos,
     List<History>? history,
     String? status,
@@ -79,12 +78,12 @@ class MainState {
     String? backgroundMusic,
     List<Project>? projects,
     bool? loadingAddTimeClockify,
+    int? indexTabPomodoro,
   }) {
     return MainState(
       round: round ?? this.round,
       duration: duration ?? this.duration,
       isStart: isStart ?? this.isStart,
-      isBreak: isBreak ?? this.isBreak,
       todos: todos ?? this.todos,
       history: history ?? this.history,
       focusTodo: focusTodo,
@@ -95,6 +94,7 @@ class MainState {
       selectedProject: selectedProject,
       loadingAddTimeClockify:
           loadingAddTimeClockify ?? this.loadingAddTimeClockify,
+      indexTabPomodoro: indexTabPomodoro ?? this.indexTabPomodoro,
     );
   }
 
@@ -106,7 +106,6 @@ class MainState {
         other.round == round &&
         other.duration == duration &&
         other.isStart == isStart &&
-        other.isBreak == isBreak &&
         listEquals(other.todos, todos) &&
         listEquals(other.history, history) &&
         other.focusTodo == focusTodo &&
@@ -115,7 +114,8 @@ class MainState {
         other.backgroundMusic == backgroundMusic &&
         listEquals(other.projects, projects) &&
         other.selectedProject == selectedProject &&
-        other.loadingAddTimeClockify == loadingAddTimeClockify;
+        other.loadingAddTimeClockify == loadingAddTimeClockify &&
+        other.indexTabPomodoro == indexTabPomodoro;
   }
 
   @override
@@ -123,7 +123,6 @@ class MainState {
     return round.hashCode ^
         duration.hashCode ^
         isStart.hashCode ^
-        isBreak.hashCode ^
         todos.hashCode ^
         history.hashCode ^
         focusTodo.hashCode ^
@@ -132,6 +131,7 @@ class MainState {
         backgroundMusic.hashCode ^
         projects.hashCode ^
         selectedProject.hashCode ^
-        loadingAddTimeClockify.hashCode;
+        loadingAddTimeClockify.hashCode ^
+        indexTabPomodoro.hashCode;
   }
 }

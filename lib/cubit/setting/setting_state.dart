@@ -8,6 +8,8 @@ class SettingState {
     this.selectedWorkspace,
     required this.loadingProjects,
     required this.projects,
+    required this.autoStartBreak,
+    required this.autoStartPomodoro,
   });
 
   final bool loadingCheckClockify;
@@ -16,12 +18,16 @@ class SettingState {
   final Workspace? selectedWorkspace;
   final bool loadingProjects;
   final List<Project> projects;
+  final bool autoStartBreak;
+  final bool autoStartPomodoro;
 
   SettingState copyWith({
     bool? loadingCheckClockify,
     List<Workspace>? workspaces,
     List<Project>? projects,
     bool? loadingProjects,
+    bool? autoStartBreak,
+    bool? autoStartPomodoro,
   }) {
     return SettingState(
       loadingCheckClockify: loadingCheckClockify ?? this.loadingCheckClockify,
@@ -30,6 +36,8 @@ class SettingState {
       user: user,
       projects: projects ?? this.projects,
       loadingProjects: loadingProjects ?? this.loadingProjects,
+      autoStartBreak: autoStartBreak ?? this.autoStartBreak,
+      autoStartPomodoro: autoStartPomodoro ?? this.autoStartPomodoro,
     );
   }
 
@@ -43,6 +51,8 @@ class SettingState {
       selectedWorkspace: selectedWorkspace,
       projects: projects,
       loadingProjects: loadingProjects,
+      autoStartBreak: autoStartBreak,
+      autoStartPomodoro: autoStartPomodoro,
     );
   }
 
@@ -56,6 +66,8 @@ class SettingState {
       selectedWorkspace: selectedWorkspace,
       projects: projects,
       loadingProjects: loadingProjects,
+      autoStartBreak: autoStartBreak,
+      autoStartPomodoro: autoStartPomodoro,
     );
   }
 
@@ -69,7 +81,9 @@ class SettingState {
         listEquals(other.workspaces, workspaces) &&
         other.selectedWorkspace == selectedWorkspace &&
         other.loadingProjects == loadingProjects &&
-        listEquals(other.projects, projects);
+        listEquals(other.projects, projects) &&
+        other.autoStartBreak == autoStartBreak &&
+        other.autoStartPomodoro == autoStartPomodoro;
   }
 
   @override
@@ -79,6 +93,8 @@ class SettingState {
         workspaces.hashCode ^
         selectedWorkspace.hashCode ^
         loadingProjects.hashCode ^
-        projects.hashCode;
+        projects.hashCode ^
+        autoStartBreak.hashCode ^
+        autoStartPomodoro.hashCode;
   }
 }

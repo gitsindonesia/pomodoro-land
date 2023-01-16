@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/setting/setting_cubit.dart';
 import 'package:pomodoro_land/widgets/button.dart';
-import 'package:pomodoro_land/widgets/dialog/clockify_section.dart';
-import 'package:pomodoro_land/widgets/dialog/time_section.dart';
 
-import '../../constants/images.dart';
+import '../../../constants/images.dart';
+import 'clockify_section.dart';
+import 'time_section.dart';
 
 class Setting extends StatefulWidget {
   const Setting({super.key});
@@ -69,9 +69,9 @@ class _SettingState extends State<Setting> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const Divider(height: 32),
                 const TimeSection(),
-                const SizedBox(height: 32),
+                const Divider(height: 32),
                 const ClockifySection(),
                 const SizedBox(height: 16),
                 Align(

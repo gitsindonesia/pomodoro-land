@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/setting/setting_cubit.dart';
 
-import '../../constants/images.dart';
+import '../../../constants/images.dart';
 
 class TimeSection extends StatelessWidget {
   const TimeSection({Key? key}) : super(key: key);
@@ -16,14 +16,15 @@ class TimeSection extends StatelessWidget {
         context.select((SettingCubit bloc) => bloc.controllerShortBreak);
     final controllerLongBreak =
         context.select((SettingCubit bloc) => bloc.controllerLongBreak);
+    final autoStartBreak =
+        context.select((SettingCubit bloc) => bloc.state.autoStartBreak);
+    final autoStartPomodoro =
+        context.select((SettingCubit bloc) => bloc.state.autoStartPomodoro);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Time (minutes)',
-          style: TextStyle(fontSize: 24),
-        ),
+        const Text('Time (minutes)', style: TextStyle(fontSize: 24)),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -192,6 +193,26 @@ class TimeSection extends StatelessWidget {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Auto Start Break', style: TextStyle(fontSize: 24)),
+          trailing:
+              Image.asset(autoStartBreak ? Images.toggleOn : Images.toggleOff),
+          onTap: () => context
+              .read<SettingCubit>()
+              .onToggleAutoStartBreakChanged(!autoStartBreak),
+        ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title:
+              const Text('Auto Start Pomodoro', style: TextStyle(fontSize: 24)),
+          trailing: Image.asset(
+              autoStartPomodoro ? Images.toggleOn : Images.toggleOff),
+          onTap: () => context
+              .read<SettingCubit>()
+              .onToggleAutoStartPomodoroChanged(!autoStartPomodoro),
         ),
       ],
     );

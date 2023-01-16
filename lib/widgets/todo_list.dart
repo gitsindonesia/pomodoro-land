@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/main/main_cubit.dart';
+import 'package:pomodoro_land/widgets/dropdown_project.dart';
 import 'package:pomodoro_land/widgets/item_todo.dart';
 
 import '../constants/images.dart';
-import '../model/project.dart';
 import 'empty_state.dart';
 
 class TodoList extends StatelessWidget {
@@ -25,40 +25,10 @@ class TodoList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (projects.isNotEmpty) ...[
-          Row(
-            children: [
-              Image.asset(Images.project, width: 34),
-              const SizedBox(width: 24),
-              Expanded(
-                child: DropdownButton<Project>(
-                  isExpanded: true,
-                  borderRadius: BorderRadius.circular(8),
-                  icon: Image.asset(Images.dropdown),
-                  underline: const SizedBox.shrink(),
-                  value: selectedProject,
-                  items: [
-                    const DropdownMenuItem<Project>(
-                      value: null,
-                      child: Text(
-                        'Not a Project',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ),
-                    ...projects.map(
-                      (e) => DropdownMenuItem<Project>(
-                        value: e,
-                        child: Text(
-                          e.name,
-                          style: TextStyle(fontSize: 20, color: e.color),
-                        ),
-                      ),
-                    ),
-                  ],
-                  onChanged: context.read<MainCubit>().onProjectSelected,
-                ),
-              ),
-              const SizedBox(width: 24),
-            ],
+          DropdownProject(
+            items: projects,
+            selectedProject: selectedProject,
+            onProjectSelected: context.read<MainCubit>().onProjectSelected,
           ),
           const SizedBox(height: 8),
         ],

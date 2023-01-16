@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/setting/setting_cubit.dart';
 import 'package:pomodoro_land/model/workspace.dart';
 
-import '../../constants/images.dart';
+import '../../../constants/images.dart';
 
 class ClockifySection extends StatelessWidget {
   const ClockifySection({super.key});

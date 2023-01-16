@@ -10,13 +10,14 @@ import 'package:pomodoro_land/model/project.dart';
 import 'package:pomodoro_land/model/workspace.dart';
 import 'package:pomodoro_land/service/service.dart';
 import 'package:pomodoro_land/storage/setting_storage.dart';
-import 'package:pomodoro_land/widgets/dialog/setting.dart';
+import 'package:pomodoro_land/widgets/button.dart';
 
 import '../../model/history.dart';
 import '../../model/todo.dart';
 import '../../model/user.dart';
 import '../../storage/history_storage.dart';
 import '../../storage/todo_storage.dart';
+import '../../widgets/dialog/setting/setting.dart';
 
 part 'main_state.dart';
 
@@ -26,7 +27,6 @@ class MainCubit extends Cubit<MainState> {
           round: 1,
           duration: const Duration(minutes: 25),
           isStart: false,
-          isBreak: false,
           todos: [],
           history: [],
           status: 'Focus',
@@ -36,6 +36,7 @@ class MainCubit extends Cubit<MainState> {
           projects: [],
           loadingAddTimeClockify: false,
           selectedProject: null,
+          indexTabPomodoro: 0,
         ));
 
   final now = DateTime.now();
@@ -58,6 +59,9 @@ class MainCubit extends Cubit<MainState> {
   User? user;
   Workspace? selectedWorkspace;
 
+  bool autoStartBreak = false;
+  bool autoStartPomodoro = false;
+
   void initState(BuildContext context) {
     backgroundPlayer.setReleaseMode(ReleaseMode.loop);
     Timer.periodic(const Duration(seconds: 1), handleTimer);
@@ -76,9 +80,12 @@ class MainCubit extends Cubit<MainState> {
   }
 
   Future<void> setupSetting() async {
+    final oldDefaultPomodoro = defaultPomodoro;
     defaultPomodoro = await settingStorage.readPomodoroDuration();
     defaultShortBreak = await settingStorage.readShortBreakDuration();
     defaultLongBreak = await settingStorage.readLongBreakDuration();
+    autoStartBreak = await settingStorage.readAutoStartBreak();
+    autoStartPomodoro = await settingStorage.readAutoStartPomodoro();
 
     apiKeyClockify = await settingStorage.readApiKeyClockify();
     user = await settingStorage.readUserClockify();
@@ -86,7 +93,10 @@ class MainCubit extends Cubit<MainState> {
     final projects = await settingStorage.readProjectsClockify();
     final selectedProject = await settingStorage.readSelectedProjectClockify();
 
-    emit(state.copyWith(duration: defaultPomodoro, projects: projects));
+    emit(state.copyWith(
+      duration: oldDefaultPomodoro == defaultPomodoro ? null : defaultPomodoro,
+      projects: projects,
+    ));
     emit(state.setSelectedProject(selectedProject));
   }
 
@@ -96,22 +106,24 @@ class MainCubit extends Cubit<MainState> {
     emit(state.copyWith(duration: duration));
     if (duration.inSeconds == 0) {
       belPlayer.play(DeviceFileSource(Sound.bel));
-      if (state.isBreak) {
+      if (state.indexTabPomodoro == 0) {
+        final round = state.round + 1;
+        final isLongBreak = round % 4 == 0;
         emit(state.copyWith(
-          isBreak: false,
-          duration: defaultPomodoro,
-          round: state.round + 1,
+          round: round,
+          duration: isLongBreak ? defaultLongBreak : defaultShortBreak,
+          indexTabPomodoro: isLongBreak ? 2 : 1,
+          isStart: autoStartBreak,
         ));
       } else {
         emit(state.copyWith(
-          isBreak: true,
-          duration: state.round % 4 == 0 ? defaultLongBreak : defaultShortBreak,
+          duration: defaultPomodoro,
+          indexTabPomodoro: 0,
+          isStart: autoStartPomodoro,
         ));
       }
 
-      emit(state.copyWith(
-        status: state.focusTodo == null ? getStatusPomodoro() : null,
-      ));
+      emit(state.copyWith(status: getStatusPomodoro()));
     }
   }
 
@@ -153,16 +165,15 @@ class MainCubit extends Cubit<MainState> {
   }
 
   void onCheckChanged(bool check, Todo todo) {
-    final todos = List<Todo>.from(state.todos);
-    todos[todos.indexOf(todo)] = Todo(
-      checklist: check,
-      task: todo.task,
-      dateTime: DateTime.now(),
-      project: todo.project,
+    updateTodo(
+      todo,
+      Todo(
+        checklist: check,
+        task: todo.task,
+        dateTime: todo.dateTime,
+        project: todo.project,
+      ),
     );
-    emit(state.copyWith(todos: todos));
-    addOrUpdateHistory(todos);
-    writeCacheTodo();
   }
 
   void addOrUpdateHistory(List<Todo> todos) {
@@ -181,7 +192,21 @@ class MainCubit extends Cubit<MainState> {
     emit(state.copyWith(history: history));
   }
 
-  String getStatusPomodoro() => state.isBreak ? 'Break' : 'Focus';
+  String getStatusPomodoro() {
+    String status = '';
+    if (state.indexTabPomodoro == 0) {
+      status = 'Pomodoro';
+    } else if (state.indexTabPomodoro == 1) {
+      status = 'Short Break';
+    } else {
+      status = 'Long Break';
+    }
+
+    if (state.focusTodo != null) {
+      return ' $status on ${state.focusTodo!.task}';
+    }
+    return status;
+  }
 
   void writeCacheTodo() async {
     await todoStorage.write(state.todos);
@@ -190,7 +215,7 @@ class MainCubit extends Cubit<MainState> {
   void onAcceptDrag(Todo todo) {
     startDateTimeTask = DateTime.now();
     emit(state.setFocusTodo(todo));
-    emit(state.copyWith(status: '${getStatusPomodoro()} on ${todo.task}'));
+    emit(state.copyWith(status: getStatusPomodoro()));
   }
 
   void onDoneFocusTodo(Todo todo) async {
@@ -255,5 +280,129 @@ class MainCubit extends Cubit<MainState> {
   void onProjectSelected(Project? selectedProject) async {
     emit(state.setSelectedProject(selectedProject));
     await settingStorage.writeSelectedProjectClockify(selectedProject);
+  }
+
+  void onEditTodoComplete(Todo todo, String task) {
+    if (task.isEmpty) return;
+    updateTodo(
+      todo,
+      Todo(
+        checklist: todo.checklist,
+        task: task,
+        dateTime: todo.dateTime,
+        project: todo.project,
+      ),
+    );
+  }
+
+  void onEditProjectTodo(Todo todo, Project? value) {
+    updateTodo(
+      todo,
+      Todo(
+        checklist: todo.checklist,
+        task: todo.task,
+        dateTime: todo.dateTime,
+        project: value,
+      ),
+    );
+  }
+
+  void updateTodo(Todo oldTodo, Todo newTodo) {
+    final todos = List<Todo>.from(state.todos);
+    todos[todos.indexOf(oldTodo)] = newTodo;
+    emit(state.copyWith(todos: todos));
+    addOrUpdateHistory(todos);
+    writeCacheTodo();
+  }
+
+  void onResetRoundPressed(BuildContext context) async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Refresh Count', style: TextStyle(fontSize: 42)),
+          content: const Text('Do you want to refresh the pomodoro count?',
+              style: TextStyle(fontSize: 24)),
+          actions: [
+            Button(
+                text: 'Cancel', onPressed: () => Navigator.of(context).pop()),
+            const SizedBox(width: 16),
+            Button(
+                text: 'Yes', onPressed: () => Navigator.of(context).pop(true)),
+          ],
+        );
+      },
+    );
+    if (result == true) {
+      emit(state.copyWith(round: 1));
+    }
+  }
+
+  void onNextPomodoroPressed(BuildContext context) {
+    final round = state.round + 1;
+    if (state.indexTabPomodoro == 0 && round % 4 == 0) {
+      setIndexPomodoro(context, 2, round: round, forceNext: true);
+    } else if (state.indexTabPomodoro == 0) {
+      setIndexPomodoro(context, 1, round: round, forceNext: true);
+    } else {
+      setIndexPomodoro(context, 0, forceNext: true);
+    }
+  }
+
+  void setIndexPomodoro(
+    BuildContext context,
+    int index, {
+    int? round,
+    bool forceNext = false,
+  }) async {
+    bool updated = true;
+    bool autoStart = false;
+    Duration duration = defaultPomodoro;
+    if (index == 0) {
+      duration = defaultPomodoro;
+      autoStart = autoStartPomodoro;
+    } else if (index == 1) {
+      duration = defaultShortBreak;
+      autoStart = autoStartBreak;
+    } else if (index == 2) {
+      duration = defaultLongBreak;
+      autoStart = autoStartBreak;
+    }
+
+    if (!forceNext && state.indexTabPomodoro != index && state.isStart) {
+      final result = await showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Switch', style: TextStyle(fontSize: 42)),
+            content: const Text(
+              'The timer is still running, are you sure you want to switch?',
+              style: TextStyle(fontSize: 24),
+            ),
+            actions: [
+              Button(
+                text: 'Cancel',
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              const SizedBox(width: 16),
+              Button(
+                text: 'Yes',
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+            ],
+          );
+        },
+      );
+      if (result == null) updated = false;
+    }
+    if (updated) {
+      emit(state.copyWith(
+        indexTabPomodoro: index,
+        duration: duration,
+        status: getStatusPomodoro(),
+        round: round,
+        isStart: autoStart,
+      ));
+    }
   }
 }
