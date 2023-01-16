@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:pomodoro_land/constants/sound.dart';
+import 'package:pomodoro_land/constants/sounds.dart';
 import 'package:pomodoro_land/model/project.dart';
 import 'package:pomodoro_land/model/workspace.dart';
 import 'package:pomodoro_land/service/service.dart';
@@ -105,7 +105,7 @@ class MainCubit extends Cubit<MainState> {
     final duration = state.duration - const Duration(seconds: 1);
     emit(state.copyWith(duration: duration));
     if (duration.inSeconds == 0) {
-      belPlayer.play(DeviceFileSource(Sound.bel));
+      belPlayer.play(AssetSource(Sounds.bel));
       if (state.indexTabPomodoro == 0) {
         final round = state.round + 1;
         final isLongBreak = round % 4 == 0;
@@ -128,7 +128,7 @@ class MainCubit extends Cubit<MainState> {
   }
 
   void onStartPressed() async {
-    buttonPlayer.play(DeviceFileSource(Sound.button));
+    buttonPlayer.play(AssetSource(Sounds.button));
 
     if (state.backgroundMusic.isNotEmpty) {
       if (!state.isStart && backgroundPlayer.state == PlayerState.stopped) {

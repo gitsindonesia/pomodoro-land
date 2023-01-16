@@ -6,7 +6,7 @@ import 'package:pomodoro_land/widgets/button.dart';
 import 'package:pomodoro_land/widgets/tab_pomodoro.dart';
 
 import '../constants/images.dart';
-import '../constants/sound.dart';
+import '../constants/sounds.dart';
 import '../model/todo.dart';
 
 class CountdownSection extends StatelessWidget {
@@ -26,7 +26,7 @@ class CountdownSection extends StatelessWidget {
 
     List<DropdownMenuItem<String>> getBackgroundMusic() {
       List<DropdownMenuItem<String>> items = [];
-      Sound.urlSounds.forEach((key, value) {
+      Sounds.urlSounds.forEach((key, value) {
         items.add(
           DropdownMenuItem(
             value: value,
