@@ -399,10 +399,10 @@ class MainCubit extends Cubit<MainState> {
       emit(state.copyWith(
         indexTabPomodoro: index,
         duration: duration,
-        status: getStatusPomodoro(),
         round: round,
         isStart: forceNext ? autoStart : false,
       ));
+      emit(state.copyWith(status: getStatusPomodoro()));
     }
   }
 }
