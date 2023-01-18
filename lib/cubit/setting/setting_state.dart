@@ -13,18 +13,18 @@ class SettingState {
   });
 
   final bool loadingCheckClockify;
-  final User? user;
-  final List<Workspace> workspaces;
-  final Workspace? selectedWorkspace;
+  final UserClockify? user;
+  final List<WorkspaceClockify> workspaces;
+  final WorkspaceClockify? selectedWorkspace;
   final bool loadingProjects;
-  final List<Project> projects;
+  final List<ProjectClockify> projects;
   final bool autoStartBreak;
   final bool autoStartPomodoro;
 
   SettingState copyWith({
     bool? loadingCheckClockify,
-    List<Workspace>? workspaces,
-    List<Project>? projects,
+    List<WorkspaceClockify>? workspaces,
+    List<ProjectClockify>? projects,
     bool? loadingProjects,
     bool? autoStartBreak,
     bool? autoStartPomodoro,
@@ -42,7 +42,7 @@ class SettingState {
   }
 
   SettingState setUser({
-    User? user,
+    UserClockify? user,
   }) {
     return SettingState(
       loadingCheckClockify: loadingCheckClockify,
@@ -57,7 +57,7 @@ class SettingState {
   }
 
   SettingState setSelectedWorkspace({
-    Workspace? selectedWorkspace,
+    WorkspaceClockify? selectedWorkspace,
   }) {
     return SettingState(
       loadingCheckClockify: loadingCheckClockify,

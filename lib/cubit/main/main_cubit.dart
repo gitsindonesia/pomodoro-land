@@ -6,16 +6,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pomodoro_land/constants/sounds.dart';
-import 'package:pomodoro_land/model/project.dart';
-import 'package:pomodoro_land/model/workspace.dart';
-import 'package:pomodoro_land/service/service.dart';
+import 'package:pomodoro_land/model/clockify/project_clockify.dart';
+import 'package:pomodoro_land/model/clockify/workspace_clockify.dart';
+import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
+import 'package:pomodoro_land/service/service_clockify.dart';
 import 'package:pomodoro_land/storage/setting_storage.dart';
 import 'package:pomodoro_land/widgets/button.dart';
+import 'package:pomodoro_land/widgets/dialog/taiga/auth_taiga.dart';
+import 'package:pomodoro_land/widgets/dialog/taiga/taiga_dashboard.dart';
 
+import '../../model/clockify/user_clockify.dart';
 import '../../model/history.dart';
 import '../../model/todo.dart';
-import '../../model/user.dart';
 import '../../storage/history_storage.dart';
+import '../../storage/taiga_storage.dart';
 import '../../storage/todo_storage.dart';
 import '../../widgets/dialog/setting/setting.dart';
 
@@ -47,6 +51,7 @@ class MainCubit extends Cubit<MainState> {
   final todoStorage = TodoStorage();
   final historyStorage = HistoryStorage();
   final settingStorage = SettingStorage();
+  final taigaStorage = TaigaStorage();
 
   final buttonPlayer = AudioPlayer(playerId: 'buttonPlayer');
   final belPlayer = AudioPlayer(playerId: 'belPlayer');
@@ -56,11 +61,13 @@ class MainCubit extends Cubit<MainState> {
   DateTime startDateTimeTask = DateTime.now();
 
   String? apiKeyClockify;
-  User? user;
-  Workspace? selectedWorkspace;
+  UserClockify? user;
+  WorkspaceClockify? selectedWorkspace;
 
   bool autoStartBreak = false;
   bool autoStartPomodoro = false;
+
+  LoginTaigaResponse? loginTaiga;
 
   void initState(BuildContext context) {
     backgroundPlayer.setReleaseMode(ReleaseMode.loop);
@@ -93,11 +100,21 @@ class MainCubit extends Cubit<MainState> {
     final projects = await settingStorage.readProjectsClockify();
     final selectedProject = await settingStorage.readSelectedProjectClockify();
 
+    loginTaiga = await taigaStorage.readLogin();
+
     emit(state.copyWith(
       duration: oldDefaultPomodoro == defaultPomodoro ? null : defaultPomodoro,
       projects: projects,
     ));
     emit(state.setSelectedProject(selectedProject));
+
+    if (apiKeyClockify != null && selectedWorkspace != null) {
+      final projects = await ServiceClockify.getProjects(
+        apiKeyClockify!,
+        selectedWorkspace!.id,
+      );
+      emit(state.copyWith(projects: projects));
+    }
   }
 
   void handleTimer(Timer timer) {
@@ -221,7 +238,7 @@ class MainCubit extends Cubit<MainState> {
   void onDoneFocusTodo(Todo todo) async {
     if (todo.project != null) {
       emit(state.copyWith(loadingAddTimeClockify: true));
-      await Service.addTimeEntry(
+      await ServiceClockify.addTimeEntry(
         apiKey: apiKeyClockify ?? '',
         workspaceId: selectedWorkspace?.id ?? '',
         projectId: todo.project?.id ?? '',
@@ -277,7 +294,7 @@ class MainCubit extends Cubit<MainState> {
     }
   }
 
-  void onProjectSelected(Project? selectedProject) async {
+  void onProjectSelected(ProjectClockify? selectedProject) async {
     emit(state.setSelectedProject(selectedProject));
     await settingStorage.writeSelectedProjectClockify(selectedProject);
   }
@@ -295,7 +312,7 @@ class MainCubit extends Cubit<MainState> {
     );
   }
 
-  void onEditProjectTodo(Todo todo, Project? value) {
+  void onEditProjectTodo(Todo todo, ProjectClockify? value) {
     updateTodo(
       todo,
       Todo(
@@ -404,5 +421,21 @@ class MainCubit extends Cubit<MainState> {
       ));
       emit(state.copyWith(status: getStatusPomodoro()));
     }
+  }
+
+  void onTaigaPressed(BuildContext context) async {
+    if (loginTaiga == null) {
+      final response = await showDialog(
+        context: context,
+        builder: (context) => const AuthTaiga(),
+      );
+      if (response is LoginTaigaResponse) {
+        loginTaiga = response;
+      }
+    }
+    await showDialog(
+      context: context,
+      builder: (context) => const TaigaDashboard(),
+    );
   }
 }

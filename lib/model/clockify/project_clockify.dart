@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 
-class Project {
-  Project({
+class ProjectClockify {
+  ProjectClockify({
     required this.id,
     required this.name,
     this.color,
@@ -22,8 +22,8 @@ class Project {
     };
   }
 
-  factory Project.fromMap(Map<String, dynamic> map) {
-    return Project(
+  factory ProjectClockify.fromMap(Map<String, dynamic> map) {
+    return ProjectClockify(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       color: map['color']?.toString().toColor(),
@@ -32,14 +32,14 @@ class Project {
 
   String toJson() => json.encode(toMap());
 
-  factory Project.fromJson(String source) =>
-      Project.fromMap(json.decode(source));
+  factory ProjectClockify.fromJson(String source) =>
+      ProjectClockify.fromMap(json.decode(source));
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is Project &&
+    return other is ProjectClockify &&
         other.id == id &&
         other.name == name &&
         other.color == color;

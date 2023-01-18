@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pomodoro_land/model/project.dart';
+import 'package:pomodoro_land/model/clockify/project_clockify.dart';
+import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../constants/images.dart';
 import '../cubit/main/main_cubit.dart';
 import '../model/todo.dart';
-import 'dropdown_project.dart';
+import 'dropdown_project_clockify.dart';
 
 class ItemTodo extends StatefulWidget {
   const ItemTodo({
@@ -22,7 +23,7 @@ class ItemTodo extends StatefulWidget {
 class _ItemTodoState extends State<ItemTodo> {
   bool isEdit = false;
   String task = '';
-  Project? selectedProject;
+  ProjectClockify? selectedProject;
 
   @override
   void initState() {
@@ -32,10 +33,10 @@ class _ItemTodoState extends State<ItemTodo> {
   }
 
   Widget? getProjectWidget(
-    List<Project> projects,
+    List<ProjectClockify> projects,
   ) {
     if (isEdit && projects.isNotEmpty) {
-      return DropdownProject(
+      return DropdownProjectClockify(
           items: projects,
           selectedProject: selectedProject,
           onProjectSelected: (value) {
@@ -109,8 +110,8 @@ class _ItemTodoState extends State<ItemTodo> {
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            InkWell(
-              onTap: () => setState(() {
+            InkWellPressed(
+              onPressed: () => setState(() {
                 if (isEdit) {
                   context
                       .read<MainCubit>()
@@ -121,8 +122,9 @@ class _ItemTodoState extends State<ItemTodo> {
               child: Image.asset(isEdit ? Images.close : Images.edit),
             ),
             const SizedBox(width: 16),
-            InkWell(
-              onTap: () => context.read<MainCubit>().onDeleteTodo(widget.todo),
+            InkWellPressed(
+              onPressed: () =>
+                  context.read<MainCubit>().onDeleteTodo(widget.todo),
               child: Image.asset(Images.delete),
             ),
           ],

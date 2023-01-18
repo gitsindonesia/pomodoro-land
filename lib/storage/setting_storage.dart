@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:pomodoro_land/model/project.dart';
-import 'package:pomodoro_land/model/workspace.dart';
+import 'package:pomodoro_land/model/clockify/project_clockify.dart';
+import 'package:pomodoro_land/model/clockify/workspace_clockify.dart';
 import 'package:pomodoro_land/storage/cache_storage.dart';
 
-import '../model/user.dart';
+import '../model/clockify/user_clockify.dart';
 
 class SettingStorage {
   final storage = CacheStorage('setting');
@@ -39,42 +39,43 @@ class SettingStorage {
     return await storage.read('api_key_clockify');
   }
 
-  Future<void> writeUserClockify(User user) =>
+  Future<void> writeUserClockify(UserClockify user) =>
       storage.write('user_clockify', user.toJson());
-  Future<User?> readUserClockify() async {
+  Future<UserClockify?> readUserClockify() async {
     final data = await storage.read('user_clockify');
     if (data == null) return null;
-    return User.fromJson(data);
+    return UserClockify.fromJson(data);
   }
 
-  Future<void> writeWorkspacesClockify(List<Workspace> workspaces) =>
+  Future<void> writeWorkspacesClockify(List<WorkspaceClockify> workspaces) =>
       storage.write('workspaces_clockify',
           jsonEncode(workspaces.map((e) => e.toMap()).toList()));
-  Future<List<Workspace>> readWorkspacesClockify() async {
+  Future<List<WorkspaceClockify>> readWorkspacesClockify() async {
     final data = await storage.read('workspaces_clockify');
     if (data == null) return [];
     final decode = jsonDecode(data);
-    return (decode as List).map((e) => Workspace.fromMap(e)).toList();
+    return (decode as List).map((e) => WorkspaceClockify.fromMap(e)).toList();
   }
 
-  Future<void> writeSelectedWorkspaceClockify(Workspace workspaces) =>
+  Future<void> writeSelectedWorkspaceClockify(WorkspaceClockify workspaces) =>
       storage.write('selected_workspace_clockify', workspaces.toJson());
-  Future<Workspace?> readSelectedWorkspaceClockify() async {
+  Future<WorkspaceClockify?> readSelectedWorkspaceClockify() async {
     final data = await storage.read('selected_workspace_clockify');
     if (data == null) return null;
-    return Workspace.fromJson(data);
+    return WorkspaceClockify.fromJson(data);
   }
 
-  Future<void> writeProjectsClockify(List<Project> project) => storage.write(
-      'project_clockify', jsonEncode(project.map((e) => e.toMap()).toList()));
-  Future<List<Project>> readProjectsClockify() async {
+  Future<void> writeProjectsClockify(List<ProjectClockify> project) =>
+      storage.write('project_clockify',
+          jsonEncode(project.map((e) => e.toMap()).toList()));
+  Future<List<ProjectClockify>> readProjectsClockify() async {
     final data = await storage.read('project_clockify');
     if (data == null) return [];
     final decode = jsonDecode(data);
-    return (decode as List).map((e) => Project.fromMap(e)).toList();
+    return (decode as List).map((e) => ProjectClockify.fromMap(e)).toList();
   }
 
-  Future<void> writeSelectedProjectClockify(Project? project) async {
+  Future<void> writeSelectedProjectClockify(ProjectClockify? project) async {
     if (project == null) {
       await storage.delete('selected_project_clockify');
     } else {
@@ -82,10 +83,10 @@ class SettingStorage {
     }
   }
 
-  Future<Project?> readSelectedProjectClockify() async {
+  Future<ProjectClockify?> readSelectedProjectClockify() async {
     final data = await storage.read('selected_project_clockify');
     if (data == null) return null;
-    return Project.fromJson(data);
+    return ProjectClockify.fromJson(data);
   }
 
   Future<void> writeAutoStartBreak(bool autoStart) =>

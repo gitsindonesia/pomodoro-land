@@ -26,8 +26,8 @@ class MainState {
   final String status;
   final int indexTab;
   final String backgroundMusic;
-  final List<Project> projects;
-  final Project? selectedProject;
+  final List<ProjectClockify> projects;
+  final ProjectClockify? selectedProject;
   final bool loadingAddTimeClockify;
   final int indexTabPomodoro;
 
@@ -49,7 +49,7 @@ class MainState {
     );
   }
 
-  MainState setSelectedProject(Project? selectedProject) {
+  MainState setSelectedProject(ProjectClockify? selectedProject) {
     return MainState(
       round: round,
       duration: duration,
@@ -76,7 +76,7 @@ class MainState {
     String? status,
     int? indexTab,
     String? backgroundMusic,
-    List<Project>? projects,
+    List<ProjectClockify>? projects,
     bool? loadingAddTimeClockify,
     int? indexTabPomodoro,
   }) {

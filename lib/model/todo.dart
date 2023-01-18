@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:pomodoro_land/model/project.dart';
+import 'package:pomodoro_land/model/clockify/project_clockify.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 
 class Todo {
@@ -14,7 +14,7 @@ class Todo {
   final bool checklist;
   final String task;
   final DateTime dateTime;
-  final Project? project;
+  final ProjectClockify? project;
 
   Map<String, dynamic> toMap() {
     return {
@@ -30,7 +30,9 @@ class Todo {
       checklist: map['checklist'] ?? false,
       task: map['task'] ?? '',
       dateTime: DateTime.parse(map['date_time']),
-      project: map['project'] != null ? Project.fromMap(map['project']) : null,
+      project: map['project'] != null
+          ? ProjectClockify.fromMap(map['project'])
+          : null,
     );
   }
 

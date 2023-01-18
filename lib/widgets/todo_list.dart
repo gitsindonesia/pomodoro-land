@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/main/main_cubit.dart';
-import 'package:pomodoro_land/widgets/dropdown_project.dart';
+import 'package:pomodoro_land/widgets/dropdown_project_clockify.dart';
 import 'package:pomodoro_land/widgets/item_todo.dart';
 
 import '../constants/images.dart';
@@ -25,7 +25,7 @@ class TodoList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (projects.isNotEmpty) ...[
-          DropdownProject(
+          DropdownProjectClockify(
             items: projects,
             selectedProject: selectedProject,
             onProjectSelected: context.read<MainCubit>().onProjectSelected,

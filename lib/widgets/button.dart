@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../constants/images.dart';
 
@@ -16,11 +17,8 @@ class Button extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      onTap: disable ? null : onPressed,
+    return InkWellPressed(
+      onPressed: disable ? null : onPressed,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: 60,

@@ -1,13 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:pomodoro_land/model/project.dart';
-import 'package:pomodoro_land/model/user.dart';
-import 'package:pomodoro_land/model/workspace.dart';
+import 'package:pomodoro_land/model/clockify/project_clockify.dart';
+import 'package:pomodoro_land/model/clockify/user_clockify.dart';
+import 'package:pomodoro_land/model/clockify/workspace_clockify.dart';
 import 'package:pomodoro_land/storage/setting_storage.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 
-import '../../service/service.dart';
+import '../../service/service_clockify.dart';
 
 part 'setting_state.dart';
 
@@ -75,8 +75,8 @@ class SettingCubit extends Cubit<SettingState> {
     emit(state.copyWith(loadingCheckClockify: true, workspaces: []));
     emit(state.setUser(user: null));
     try {
-      final user = await Service.getUser(apiKey);
-      final workspaces = await Service.getWorkspaces(apiKey);
+      final user = await ServiceClockify.getUser(apiKey);
+      final workspaces = await ServiceClockify.getWorkspaces(apiKey);
 
       apiKeyClockify = apiKey;
       emit(state.setUser(user: user));
@@ -89,14 +89,14 @@ class SettingCubit extends Cubit<SettingState> {
   }
 
   void onChangeWorkspace(
-      BuildContext context, Workspace? selectedWorkspace) async {
+      BuildContext context, WorkspaceClockify? selectedWorkspace) async {
     if (selectedWorkspace == null) return;
     emit(state.setSelectedWorkspace(selectedWorkspace: selectedWorkspace));
     if (apiKeyClockify != null) {
       emit(state.copyWith(loadingProjects: true));
       try {
-        final projects =
-            await Service.getProjects(apiKeyClockify!, selectedWorkspace.id);
+        final projects = await ServiceClockify.getProjects(
+            apiKeyClockify!, selectedWorkspace.id);
 
         emit(state.copyWith(projects: projects));
       } catch (e) {
@@ -110,7 +110,7 @@ class SettingCubit extends Cubit<SettingState> {
     Navigator.of(context).pop();
     context.showSnackBar(
       SnackBar(
-        backgroundColor: Colors.red[200],
+        backgroundColor: Colors.red[100],
         content: Text(
           'Your clockify api might have a typo, please check again and try again',
           style: TextStyle(fontSize: 20, color: Colors.red[700]),
