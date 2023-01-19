@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:pomodoro_land/model/clockify/project_clockify.dart';
+import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 
 class Todo {
@@ -9,12 +10,14 @@ class Todo {
     required this.task,
     required this.dateTime,
     this.project,
+    this.taskTaiga,
   });
 
   final bool checklist;
   final String task;
   final DateTime dateTime;
   final ProjectClockify? project;
+  final TasksResponse? taskTaiga;
 
   Map<String, dynamic> toMap() {
     return {
@@ -22,6 +25,7 @@ class Todo {
       'task': task,
       'date_time': dateTime.toMap(),
       'project': project?.toMap(),
+      'task_taiga': taskTaiga?.toMap(),
     };
   }
 
@@ -32,6 +36,9 @@ class Todo {
       dateTime: DateTime.parse(map['date_time']),
       project: map['project'] != null
           ? ProjectClockify.fromMap(map['project'])
+          : null,
+      taskTaiga: map['task_taiga'] != null
+          ? TasksResponse.fromMap(map['task_taiga'])
           : null,
     );
   }
@@ -48,7 +55,8 @@ class Todo {
         other.checklist == checklist &&
         other.task == task &&
         other.dateTime == dateTime &&
-        other.project == project;
+        other.project == project &&
+        other.taskTaiga == taskTaiga;
   }
 
   @override
@@ -56,6 +64,7 @@ class Todo {
     return checklist.hashCode ^
         task.hashCode ^
         dateTime.hashCode ^
-        project.hashCode;
+        project.hashCode ^
+        taskTaiga.hashCode;
   }
 }

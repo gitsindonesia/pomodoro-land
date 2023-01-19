@@ -8,10 +8,6 @@
             "name": "pomodoro_land",
             "request": "launch",
             "type": "dart",
-            "args": [
-                "--web-renderer",
-                "html"
-            ]
         },
         {
             "name": "pomodoro_land (profile mode)",

@@ -9,6 +9,7 @@ import 'package:pomodoro_land/constants/sounds.dart';
 import 'package:pomodoro_land/model/clockify/project_clockify.dart';
 import 'package:pomodoro_land/model/clockify/workspace_clockify.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
+import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 import 'package:pomodoro_land/service/service_clockify.dart';
 import 'package:pomodoro_land/storage/setting_storage.dart';
 import 'package:pomodoro_land/widgets/button.dart';
@@ -408,10 +409,25 @@ class MainCubit extends Cubit<MainState> {
       }
     }
     if (loginTaiga != null) {
-      await showDialog(
+      final tasks = await showDialog(
         context: context,
         builder: (context) => const TaigaDashboard(),
       );
+
+      if (tasks is List<TasksResponse> && tasks.isNotEmpty) {
+        final todos = tasks
+            .map((e) => Todo(
+                  checklist: false,
+                  task: '#${e.ref} ${e.subject}',
+                  dateTime: DateTime.now(),
+                  taskTaiga: e,
+                ))
+            .toList();
+        emit(state.copyWith(
+          todos: [...state.todos, ...todos],
+        ));
+        writeCacheTodo();
+      }
     }
   }
 

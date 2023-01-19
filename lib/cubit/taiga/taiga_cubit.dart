@@ -159,7 +159,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     if (state.allChecklist) {
       emit(state.copyWith(taskToTodo: [], allChecklist: false));
     } else {
-      emit(state.copyWith(taskToTodo: state.tasks, allChecklist: true));
+      emit(state.copyWith(taskToTodo: state.filteredTasks, allChecklist: true));
     }
   }
 
@@ -175,7 +175,9 @@ class TaigaCubit extends Cubit<TaigaState> {
     }
   }
 
-  void onAddToTodo(BuildContext context) {}
+  void onAddToTodo(BuildContext context) {
+    Navigator.of(context).pop(state.taskToTodo);
+  }
 
   void onClearTaskTodo() =>
       emit(state.copyWith(taskToTodo: [], allChecklist: false));
