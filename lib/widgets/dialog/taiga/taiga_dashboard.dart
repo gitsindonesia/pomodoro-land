@@ -74,6 +74,7 @@ class _TaigaDashboardState extends State<TaigaDashboard> {
                           )
                         : Expanded(
                             child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: const [
                                 SizedBox(
                                   width: 250,

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_taiga_response.dart';
+import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 
 import 'cache_storage.dart';
 
@@ -44,5 +45,22 @@ class TaigaStorage {
     final data = await storage.read('project_detail_$slug');
     if (data == null) return null;
     return ProjectDetailTaigaResponse.fromJson(data);
+  }
+
+  Future<void> writeTasks(
+    int projectId,
+    int milestoneId,
+    List<TasksResponse> tasks,
+  ) =>
+      storage.write('task_${milestoneId}_$projectId',
+          jsonEncode(tasks.map((e) => e.toMap()).toList()));
+  Future<List<TasksResponse>> readTasks(
+    int projectId,
+    int milestoneId,
+  ) async {
+    final data = await storage.read('task_${milestoneId}_$projectId');
+    if (data == null) return [];
+    final decode = jsonDecode(data);
+    return (decode as List).map((e) => TasksResponse.fromMap(e)).toList();
   }
 }

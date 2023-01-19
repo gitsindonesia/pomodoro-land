@@ -3,31 +3,43 @@ part of 'taiga_cubit.dart';
 class TaigaState {
   TaigaState({
     required this.loadingGlobal,
-    required this.loadingContent,
+    required this.loadingMilestone,
+    required this.loadingTask,
     required this.projects,
     this.selectedProject,
     this.projectDetail,
+    required this.tasks,
+    required this.selectedMilestoneId,
   });
 
   final bool loadingGlobal;
-  final bool loadingContent;
+  final bool loadingMilestone;
+  final bool loadingTask;
   final List<ProjectTaigaResponse> projects;
   final ProjectTaigaResponse? selectedProject;
   final ProjectDetailTaigaResponse? projectDetail;
+  final List<TasksResponse> tasks;
+  final int selectedMilestoneId;
 
   TaigaState copyWith({
     bool? loadingGlobal,
-    bool? loadingContent,
+    bool? loadingMilestone,
+    bool? loadingTask,
     List<ProjectTaigaResponse>? projects,
     ProjectTaigaResponse? selectedProject,
     ProjectDetailTaigaResponse? projectDetail,
+    List<TasksResponse>? tasks,
+    int? selectedMilestoneId,
   }) {
     return TaigaState(
       loadingGlobal: loadingGlobal ?? this.loadingGlobal,
-      loadingContent: loadingContent ?? this.loadingContent,
+      loadingMilestone: loadingMilestone ?? this.loadingMilestone,
+      loadingTask: loadingTask ?? this.loadingTask,
       projects: projects ?? this.projects,
       selectedProject: selectedProject ?? this.selectedProject,
       projectDetail: projectDetail ?? this.projectDetail,
+      tasks: tasks ?? this.tasks,
+      selectedMilestoneId: selectedMilestoneId ?? this.selectedMilestoneId,
     );
   }
 
@@ -37,18 +49,24 @@ class TaigaState {
 
     return other is TaigaState &&
         other.loadingGlobal == loadingGlobal &&
-        other.loadingContent == loadingContent &&
+        other.loadingMilestone == loadingMilestone &&
+        other.loadingTask == loadingTask &&
         listEquals(other.projects, projects) &&
         other.selectedProject == selectedProject &&
-        other.projectDetail == projectDetail;
+        other.projectDetail == projectDetail &&
+        listEquals(other.tasks, tasks) &&
+        other.selectedMilestoneId == selectedMilestoneId;
   }
 
   @override
   int get hashCode {
     return loadingGlobal.hashCode ^
-        loadingContent.hashCode ^
+        loadingMilestone.hashCode ^
+        loadingTask.hashCode ^
         projects.hashCode ^
         selectedProject.hashCode ^
-        projectDetail.hashCode;
+        projectDetail.hashCode ^
+        tasks.hashCode ^
+        selectedMilestoneId.hashCode;
   }
 }

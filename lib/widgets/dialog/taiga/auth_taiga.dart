@@ -120,6 +120,7 @@ class _AuthTaigaState extends State<AuthTaiga> {
                     controller: password,
                     obscureText: true,
                     style: const TextStyle(fontSize: 24),
+                    onEditingComplete: () => onLoginPressed(context),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       hintText: 'Password (case sensitve)',

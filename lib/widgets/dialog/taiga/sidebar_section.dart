@@ -13,9 +13,11 @@ class SidebarSection extends StatelessWidget {
     final selectedProject =
         context.select((TaigaCubit bloc) => bloc.state.selectedProject);
     final loadingContent =
-        context.select((TaigaCubit bloc) => bloc.state.loadingContent);
+        context.select((TaigaCubit bloc) => bloc.state.loadingMilestone);
     final projectDetail =
         context.select((TaigaCubit bloc) => bloc.state.projectDetail);
+    final selectedMilestoneId =
+        context.select((TaigaCubit bloc) => bloc.state.selectedMilestoneId);
 
     return ListView.builder(
       itemBuilder: (context, index) {
@@ -40,23 +42,25 @@ class SidebarSection extends StatelessWidget {
                   ),
                 ),
               ),
-            if (projectDetail != null) ...[
-              ...(projectDetail.milestones
-                          ?.where((element) => element.closed == false) ??
+            if (!loadingContent && projectDetail != null) ...[
+              ...(projectDetail.milestones?.reversed
+                          .where((element) => element.closed == false) ??
                       [])
                   .map(
                     (e) => ListTile(
                       leading: const Icon(Icons.circle, size: 8),
                       horizontalTitleGap: 0,
+                      selected: selectedMilestoneId == e.id,
                       title: Text(e.name ?? ''),
                       onTap: () => context
                           .read<TaigaCubit>()
-                          .onMilestonePressed(context, projectDetail),
+                          .onMilestonePressed(context, projectDetail, e),
                     ),
                   )
                   .toList(),
               ListTile(
                 leading: const Icon(Icons.circle, size: 8),
+                selected: selectedMilestoneId == 0,
                 horizontalTitleGap: 0,
                 title: const Text('Issue'),
                 onTap: () => context
