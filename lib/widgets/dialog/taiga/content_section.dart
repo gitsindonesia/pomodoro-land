@@ -183,30 +183,36 @@ class ContentSection extends StatelessWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(
-                                width: 300,
-                                child: Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '#${e?.id}',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          color: Colors.blue,
+                              InkWellPressed(
+                                onPressed: () => context
+                                    .read<TaigaCubit>()
+                                    .onUserStoryPressed(context, e),
+                                child: SizedBox(
+                                  width: 300,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 8),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '#${e?.ref}',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.blue,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          e?.subject ?? '',
-                                          style: const TextStyle(fontSize: 14),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            e?.subject ?? '',
+                                            style:
+                                                const TextStyle(fontSize: 14),
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -219,19 +225,35 @@ class ContentSection extends StatelessWidget {
                                                 vertical: 8),
                                             child: Row(
                                               children: [
-                                                Text(
-                                                  '#${e.id}',
-                                                  style: const TextStyle(
-                                                    fontSize: 14,
-                                                    color: Colors.blue,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
                                                 Expanded(
-                                                  child: Text(
-                                                    e.subject ?? '',
-                                                    style: const TextStyle(
-                                                        fontSize: 14),
+                                                  child: InkWellPressed(
+                                                    onPressed: () => context
+                                                        .read<TaigaCubit>()
+                                                        .onTaskPressed(
+                                                            context, e),
+                                                    child: Row(
+                                                      children: [
+                                                        Text(
+                                                          '#${e.ref}',
+                                                          style:
+                                                              const TextStyle(
+                                                            fontSize: 14,
+                                                            color: Colors.blue,
+                                                          ),
+                                                        ),
+                                                        const SizedBox(
+                                                            width: 8),
+                                                        Expanded(
+                                                          child: Text(
+                                                            e.subject ?? '',
+                                                            style:
+                                                                const TextStyle(
+                                                                    fontSize:
+                                                                        14),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
                                                 const SizedBox(width: 32),
@@ -341,7 +363,7 @@ class ContentSection extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    taskToTodo.map((e) => '#${e.id}').join(', '),
+                    taskToTodo.map((e) => '#${e.ref}').join(', '),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(fontSize: 20, color: Colors.white),

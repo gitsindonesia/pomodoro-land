@@ -72,7 +72,8 @@ abstract class ServiceTaiga {
     int milestoneId,
   ) async {
     final response = await http.get(
-      taigaUrl('/tasks?project=$projectId&milestone=$milestoneId'),
+      taigaUrl(
+          '/tasks?project=$projectId&milestone=$milestoneId&order_by=us_order'),
       headers: getHeaders(token),
     );
     if (response.statusCode != 200) {

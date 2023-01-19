@@ -11,6 +11,7 @@ import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 import 'package:pomodoro_land/service/service_taiga.dart';
 import 'package:pomodoro_land/storage/taiga_storage.dart';
 import 'package:pomodoro_land/utils/extension.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 part 'taiga_state.dart';
 
@@ -49,6 +50,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     String token,
     int userId,
   ) async {
+    emit(state.copyWith(loadingGlobal: true));
     final cached = await storage.readProjects(userId);
     emit(state.copyWith(loadingGlobal: cached.isEmpty, projects: cached));
     try {
@@ -82,6 +84,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     String token,
     ProjectTaigaResponse project,
   ) async {
+    emit(state.copyWith(loadingMilestone: true));
     final cached = await storage.readProjectDetail(project.slug ?? '');
     emit(state.copyWith(
         loadingMilestone: cached == null, projectDetail: cached));
@@ -132,6 +135,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     int projectId,
     int milestoneId,
   ) async {
+    emit(state.copyWith(loadingTask: true));
     final cached = await storage.readTasks(projectId, milestoneId);
     emit(state.copyWith(loadingTask: cached.isEmpty, tasks: cached));
     try {
@@ -198,5 +202,23 @@ class TaigaCubit extends Cubit<TaigaState> {
                 : state.filterAssign?.id == element.assignedTo))
         .toList();
     emit(state.copyWith(filteredTasks: filteredTask));
+  }
+
+  void onUserStoryPressed(
+    BuildContext context,
+    UserStoryExtraInfoTasks? userStory,
+  ) async {
+    if (state.projectDetail == null &&
+        userStory == null &&
+        state.selectedMilestoneId <= 0) return;
+    await launchUrlString(
+      'https://taiga.gits.id/project/${state.projectDetail?.slug}/us/${userStory?.ref}?milestone=${state.selectedMilestoneId}',
+    );
+  }
+
+  void onTaskPressed(BuildContext context, TasksResponse task) async {
+    await launchUrlString(
+      'https://taiga.gits.id/project/${state.projectDetail?.slug}/task/${task.ref ?? 0}',
+    );
   }
 }
