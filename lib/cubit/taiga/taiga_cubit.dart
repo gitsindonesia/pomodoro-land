@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +23,9 @@ class TaigaCubit extends Cubit<TaigaState> {
           projects: [],
           tasks: [],
           selectedMilestoneId: -1,
+          taskToTodo: [],
+          allChecklist: false,
+          filteredTasks: [],
         ));
 
   final storage = TaigaStorage();
@@ -132,7 +136,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     emit(state.copyWith(loadingTask: cached.isEmpty, tasks: cached));
     try {
       final tasks = await ServiceTaiga.tasks(token, projectId, milestoneId);
-      emit(state.copyWith(tasks: tasks));
+      emit(state.copyWith(tasks: tasks, filteredTasks: tasks));
     } catch (e) {
       context.showSnackBar(
         SnackBar(
@@ -145,5 +149,54 @@ class TaigaCubit extends Cubit<TaigaState> {
       );
     }
     emit(state.copyWith(loadingTask: false));
+  }
+
+  void onChecklistAllTask() {
+    if (state.allChecklist) {
+      emit(state.copyWith(taskToTodo: [], allChecklist: false));
+    } else {
+      emit(state.copyWith(taskToTodo: state.tasks, allChecklist: true));
+    }
+  }
+
+  void onChecklistTask(TasksResponse e) {
+    if (state.taskToTodo.firstWhereOrNull((element) => e == element) == null) {
+      emit(state.copyWith(
+        taskToTodo: [...state.taskToTodo, e],
+      ));
+    } else {
+      final taskToTodo = List<TasksResponse>.from(state.taskToTodo);
+      taskToTodo.remove(e);
+      emit(state.copyWith(taskToTodo: taskToTodo));
+    }
+  }
+
+  void onAddToTodo(BuildContext context) {}
+
+  void onClearTaskTodo() =>
+      emit(state.copyWith(taskToTodo: [], allChecklist: false));
+
+  void onFilterAssignChanged(MembersProjectDetailTaiga? value) {
+    emit(state.setFilterAssign(filterAssign: value));
+    filterTask();
+  }
+
+  void onFilterProgressChanged(TaskStatusesProjectDetailTaiga? value) {
+    emit(state.setFilterProgress(filterProgress: value));
+    filterTask();
+  }
+
+  void filterTask() {
+    List<TasksResponse> filteredTask = List<TasksResponse>.from(state.tasks);
+    filteredTask = filteredTask
+        .where((element) =>
+            (state.filterProgress == null
+                ? true
+                : state.filterProgress?.id == element.status) &&
+            (state.filterAssign == null
+                ? true
+                : state.filterAssign?.id == element.assignedTo))
+        .toList();
+    emit(state.copyWith(filteredTasks: filteredTask));
   }
 }
