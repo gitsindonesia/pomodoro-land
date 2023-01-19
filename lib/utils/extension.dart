@@ -13,6 +13,7 @@ extension DurationExtension on Duration {
 extension DateTimeExtension on DateTime {
   String toMap() => DateFormat('yyyy-MM-dd').format(this);
   String toFormatDate() => DateFormat('dd MMMM yyyy').format(this);
+  String toFormatTime() => DateFormat('HH:mm').format(this);
 }
 
 extension SnackBarExtension on BuildContext {

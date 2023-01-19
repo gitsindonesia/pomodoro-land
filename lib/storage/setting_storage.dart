@@ -7,6 +7,14 @@ import 'package:pomodoro_land/storage/cache_storage.dart';
 import '../model/clockify/user_clockify.dart';
 
 class SettingStorage {
+  static final SettingStorage _instance = SettingStorage._();
+
+  factory SettingStorage() {
+    return _instance;
+  }
+
+  SettingStorage._();
+
   final storage = CacheStorage('setting');
 
   Future<void> writePomodoroDuration(Duration duration) =>

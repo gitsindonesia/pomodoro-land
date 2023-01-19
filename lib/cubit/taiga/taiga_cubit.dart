@@ -41,7 +41,8 @@ class TaigaCubit extends Cubit<TaigaState> {
     String token,
     int userId,
   ) async {
-    emit(state.copyWith(loadingGlobal: true));
+    final cached = await storage.readProjects(userId);
+    emit(state.copyWith(loadingGlobal: cached.isEmpty, projects: cached));
     try {
       final projects = await ServiceTaiga.projects(token, userId);
       emit(state.copyWith(projects: projects));
@@ -73,7 +74,8 @@ class TaigaCubit extends Cubit<TaigaState> {
     String token,
     ProjectTaigaResponse project,
   ) async {
-    emit(state.copyWith(loadingContent: true));
+    final cached = await storage.readProjectDetail(project.slug ?? '');
+    emit(state.copyWith(loadingContent: cached == null, projectDetail: cached));
     try {
       final projectDetail =
           await ServiceTaiga.projectDetail(token, project.slug ?? '');

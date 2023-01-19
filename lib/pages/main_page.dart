@@ -82,9 +82,9 @@ class _MainPageState extends State<MainPage> {
               Expanded(
                 child: Row(
                   children: const [
-                    Spacer(),
+                    SizedBox(width: 80),
                     CountdownSection(),
-                    Spacer(),
+                    SizedBox(width: 80),
                     Expanded(flex: 7, child: TodoSection()),
                   ],
                 ),

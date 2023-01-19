@@ -18,5 +18,7 @@ abstract class Images {
   static const String toggleOff = 'assets/images/toggle-off.png';
   static const String clockify = 'assets/images/clockify.png';
   static const String taiga = 'assets/images/taiga.png';
+  static const String buttonWhite = 'assets/images/button-white.png';
+  static const String focusLine = 'assets/images/focus-line.png';
   static const String pomodoroTomato = 'assets/images/pomodoro-tomato.png';
 }

@@ -12,9 +12,11 @@ class ItemTodo extends StatefulWidget {
   const ItemTodo({
     Key? key,
     required this.todo,
+    this.selected = false,
   }) : super(key: key);
 
   final Todo todo;
+  final bool selected;
 
   @override
   State<ItemTodo> createState() => _ItemTodoState();
@@ -68,13 +70,21 @@ class _ItemTodoState extends State<ItemTodo> {
         ),
       ),
       child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        selectedTileColor: Colors.blue[50],
+        selected: widget.selected,
         leading: isEdit
             ? null
-            : Image.asset(
-                widget.todo.checklist
-                    ? Images.checkActive
-                    : Images.checkInactive,
-                height: widget.todo.checklist ? 50 : 36,
+            : InkWellPressed(
+                onPressed: () => context
+                    .read<MainCubit>()
+                    .onCheckChanged(!widget.todo.checklist, widget.todo),
+                child: Image.asset(
+                  widget.todo.checklist
+                      ? Images.checkActive
+                      : Images.checkInactive,
+                  height: widget.todo.checklist ? 50 : 36,
+                ),
               ),
         title: isEdit
             ? Column(
@@ -129,9 +139,7 @@ class _ItemTodoState extends State<ItemTodo> {
             ),
           ],
         ),
-        onTap: () => context
-            .read<MainCubit>()
-            .onCheckChanged(!widget.todo.checklist, widget.todo),
+        onTap: () => context.read<MainCubit>().onAcceptDrag(widget.todo),
       ),
     );
   }

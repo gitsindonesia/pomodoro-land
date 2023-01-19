@@ -9,11 +9,24 @@ class Button extends StatelessWidget {
     this.onPressed,
     required this.text,
     this.disable = false,
-  }) : super(key: key);
+  })  : image = Images.button,
+        textColor = null,
+        super(key: key);
+
+  const Button.white({
+    Key? key,
+    this.onPressed,
+    required this.text,
+    this.disable = false,
+  })  : image = Images.buttonWhite,
+        textColor = Colors.white,
+        super(key: key);
 
   final GestureTapCallback? onPressed;
   final String text;
   final bool disable;
+  final String image;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
@@ -26,13 +39,14 @@ class Button extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(disable ? Images.buttonInactive : Images.button),
+            image: AssetImage(disable ? Images.buttonInactive : image),
             fit: BoxFit.contain,
           ),
         ),
         child: Text(
           text,
-          style: TextStyle(fontSize: 20, color: disable ? Colors.grey : null),
+          style:
+              TextStyle(fontSize: 20, color: disable ? Colors.grey : textColor),
         ),
       ),
     );

@@ -5,6 +5,14 @@ import 'package:pomodoro_land/storage/cache_storage.dart';
 import '../model/todo.dart';
 
 class TodoStorage {
+  static final TodoStorage _instance = TodoStorage._();
+
+  factory TodoStorage() {
+    return _instance;
+  }
+
+  TodoStorage._();
+
   final storage = CacheStorage('todo');
 
   Future<void> write(List<Todo> todos) async {

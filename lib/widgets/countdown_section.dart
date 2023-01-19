@@ -15,15 +15,11 @@ class CountdownSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = context.select((MainCubit bloc) => bloc.state.status);
-    final focusTodo = context.select((MainCubit bloc) => bloc.state.focusTodo);
     final duration = context.select((MainCubit bloc) => bloc.state.duration);
     final round = context.select((MainCubit bloc) => bloc.state.round);
     final isStart = context.select((MainCubit bloc) => bloc.state.isStart);
     final backgroundMusic =
         context.select((MainCubit bloc) => bloc.state.backgroundMusic);
-    final loadingAddTimeClockify =
-        context.select((MainCubit bloc) => bloc.state.loadingAddTimeClockify);
 
     List<DropdownMenuItem<String>> getBackgroundMusic() {
       List<DropdownMenuItem<String>> items = [];
@@ -126,59 +122,6 @@ class CountdownSection extends StatelessWidget {
               ),
             ],
           ),
-          if (focusTodo != null) ...[
-            const SizedBox(height: 32),
-            SizedBox(
-              width: 600,
-              child: Column(
-                children: [
-                  Text(
-                    status,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 24),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (focusTodo.project != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      focusTodo.project?.name ?? '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: focusTodo.project?.color,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (!loadingAddTimeClockify) const SizedBox(width: 60),
-                InkWellPressed(
-                  onPressed: () => context.read<MainCubit>().onClearFocusTodo(),
-                  child: const Text('Clear', style: TextStyle(fontSize: 20)),
-                ),
-                const SizedBox(width: 60),
-                loadingAddTimeClockify
-                    ? const SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(Colors.black),
-                        ),
-                      )
-                    : Button(
-                        onPressed: () => context
-                            .read<MainCubit>()
-                            .onDoneFocusTodo(focusTodo),
-                        text: 'Task Done',
-                      ),
-              ],
-            ),
-          ],
         ],
       ),
     );

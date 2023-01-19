@@ -6,6 +6,14 @@ import 'package:pomodoro_land/utils/extension.dart';
 import '../model/history.dart';
 
 class HistoryStorage {
+  static final HistoryStorage _instance = HistoryStorage._();
+
+  factory HistoryStorage() {
+    return _instance;
+  }
+
+  HistoryStorage._();
+
   final storage = CacheStorage('history');
 
   Future<void> write(DateTime dateTime, List<History> history) async {

@@ -33,7 +33,6 @@ class MainCubit extends Cubit<MainState> {
           isStart: false,
           todos: [],
           history: [],
-          status: 'Focus',
           focusTodo: null,
           indexTab: 0,
           backgroundMusic: '',
@@ -41,6 +40,7 @@ class MainCubit extends Cubit<MainState> {
           loadingAddTimeClockify: false,
           selectedProject: null,
           indexTabPomodoro: 0,
+          startDateTimeTask: DateTime.now(),
         ));
 
   final now = DateTime.now();
@@ -57,8 +57,6 @@ class MainCubit extends Cubit<MainState> {
   final belPlayer = AudioPlayer(playerId: 'belPlayer');
   final backgroundPlayer = AudioPlayer(playerId: 'backgroundPlayer');
   final controller = TextEditingController();
-
-  DateTime startDateTimeTask = DateTime.now();
 
   String? apiKeyClockify;
   UserClockify? user;
@@ -139,8 +137,6 @@ class MainCubit extends Cubit<MainState> {
           isStart: autoStartPomodoro,
         ));
       }
-
-      emit(state.copyWith(status: getStatusPomodoro()));
     }
   }
 
@@ -209,30 +205,13 @@ class MainCubit extends Cubit<MainState> {
     emit(state.copyWith(history: history));
   }
 
-  String getStatusPomodoro() {
-    String status = '';
-    if (state.indexTabPomodoro == 0) {
-      status = 'Pomodoro';
-    } else if (state.indexTabPomodoro == 1) {
-      status = 'Short Break';
-    } else {
-      status = 'Long Break';
-    }
-
-    if (state.focusTodo != null) {
-      return ' $status on ${state.focusTodo!.task}';
-    }
-    return status;
-  }
-
   void writeCacheTodo() async {
     await todoStorage.write(state.todos);
   }
 
   void onAcceptDrag(Todo todo) {
-    startDateTimeTask = DateTime.now();
+    emit(state.copyWith(startDateTimeTask: DateTime.now()));
     emit(state.setFocusTodo(todo));
-    emit(state.copyWith(status: getStatusPomodoro()));
   }
 
   void onDoneFocusTodo(Todo todo) async {
@@ -242,22 +221,18 @@ class MainCubit extends Cubit<MainState> {
         apiKey: apiKeyClockify ?? '',
         workspaceId: selectedWorkspace?.id ?? '',
         projectId: todo.project?.id ?? '',
-        startTime: startDateTimeTask,
+        startTime: state.startDateTimeTask,
         endTime: DateTime.now(),
         description: todo.task,
       );
     }
     onCheckChanged(true, todo);
     emit(state.setFocusTodo(null));
-    emit(state.copyWith(
-      status: getStatusPomodoro(),
-      loadingAddTimeClockify: false,
-    ));
+    emit(state.copyWith(loadingAddTimeClockify: false));
   }
 
   void onClearFocusTodo() {
     emit(state.setFocusTodo(null));
-    emit(state.copyWith(status: getStatusPomodoro()));
   }
 
   void setIndex(int index) => emit(state.copyWith(indexTab: index));
@@ -419,7 +394,6 @@ class MainCubit extends Cubit<MainState> {
         round: round,
         isStart: forceNext ? autoStart : false,
       ));
-      emit(state.copyWith(status: getStatusPomodoro()));
     }
   }
 
@@ -433,9 +407,27 @@ class MainCubit extends Cubit<MainState> {
         loginTaiga = response;
       }
     }
-    await showDialog(
+    if (loginTaiga != null) {
+      await showDialog(
+        context: context,
+        builder: (context) => const TaigaDashboard(),
+      );
+    }
+  }
+
+  void onStartTimePressed(BuildContext context) async {
+    final timeOfDay = await showTimePicker(
       context: context,
-      builder: (context) => const TaigaDashboard(),
+      initialEntryMode: TimePickerEntryMode.input,
+      initialTime: TimeOfDay(
+        hour: state.startDateTimeTask.hour,
+        minute: state.startDateTimeTask.minute,
+      ),
     );
+    if (timeOfDay != null) {
+      final startTime = DateTime(
+          now.year, now.month, now.day, timeOfDay.hour, timeOfDay.minute);
+      emit(state.copyWith(startDateTimeTask: startTime));
+    }
   }
 }

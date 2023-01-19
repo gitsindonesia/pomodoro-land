@@ -1,8 +1,20 @@
+import 'dart:convert';
+
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
+import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
+import 'package:pomodoro_land/model/taiga/response/project_taiga_response.dart';
 
 import 'cache_storage.dart';
 
 class TaigaStorage {
+  static final TaigaStorage _instance = TaigaStorage._();
+
+  factory TaigaStorage() {
+    return _instance;
+  }
+
+  TaigaStorage._();
+
   final storage = CacheStorage('taiga');
 
   Future<void> writeLogin(LoginTaigaResponse response) =>
@@ -11,5 +23,26 @@ class TaigaStorage {
     final data = await storage.read('user');
     if (data == null) return null;
     return LoginTaigaResponse.fromJson(data);
+  }
+
+  Future<void> writeProjects(int userId, List<ProjectTaigaResponse> projects) =>
+      storage.write('projects_$userId',
+          jsonEncode(projects.map((e) => e.toMap()).toList()));
+  Future<List<ProjectTaigaResponse>> readProjects(int userId) async {
+    final data = await storage.read('projects_$userId');
+    if (data == null) return [];
+    final decode = jsonDecode(data);
+    return (decode as List)
+        .map((e) => ProjectTaigaResponse.fromMap(e))
+        .toList();
+  }
+
+  Future<void> writeProjectDetail(
+          String slug, ProjectDetailTaigaResponse projectDetail) =>
+      storage.write('project_detail_$slug', projectDetail.toJson());
+  Future<ProjectDetailTaigaResponse?> readProjectDetail(String slug) async {
+    final data = await storage.read('project_detail_$slug');
+    if (data == null) return null;
+    return ProjectDetailTaigaResponse.fromJson(data);
   }
 }

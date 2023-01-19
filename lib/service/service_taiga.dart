@@ -5,6 +5,7 @@ import 'package:pomodoro_land/model/taiga/body/login_taiga_body.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_taiga_response.dart';
+import 'package:pomodoro_land/storage/taiga_storage.dart';
 
 abstract class ServiceTaiga {
   static Uri taigaUrl(String path) =>
@@ -28,7 +29,9 @@ abstract class ServiceTaiga {
   }
 
   static Future<List<ProjectTaigaResponse>> projects(
-      String token, int userId) async {
+    String token,
+    int userId,
+  ) async {
     final response = await http.get(
       taigaUrl('/projects?member=$userId&order_by=user_order&slight=true'),
       headers: getHeaders(token),
@@ -38,9 +41,13 @@ abstract class ServiceTaiga {
           jsonDecode(response.body)['detail'] ?? 'Projects not found');
     }
     final data = jsonDecode(response.body);
-    return data is List
-        ? (data).map((e) => ProjectTaigaResponse.fromMap(e)).toList()
-        : throw Exception('Projects not found');
+    if (data is List) {
+      final projects =
+          (data).map((e) => ProjectTaigaResponse.fromMap(e)).toList();
+      await TaigaStorage().writeProjects(userId, projects);
+      return projects;
+    }
+    throw Exception('Projects not found');
   }
 
   static Future<ProjectDetailTaigaResponse> projectDetail(
@@ -53,6 +60,8 @@ abstract class ServiceTaiga {
       throw Exception(
           jsonDecode(response.body)['detail'] ?? 'Project not found');
     }
-    return ProjectDetailTaigaResponse.fromJson(response.body);
+    final projectDetail = ProjectDetailTaigaResponse.fromJson(response.body);
+    await TaigaStorage().writeProjectDetail(slug, projectDetail);
+    return projectDetail;
   }
 }
