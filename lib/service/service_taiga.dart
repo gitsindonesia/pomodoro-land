@@ -6,6 +6,7 @@ import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/milestone_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_taiga_response.dart';
+import 'package:pomodoro_land/model/taiga/response/task_detail_response.dart';
 import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 import 'package:pomodoro_land/storage/taiga_storage.dart';
 
@@ -107,6 +108,23 @@ abstract class ServiceTaiga {
       return tasks;
     }
     throw Exception('Tasks not found');
+  }
+
+  static Future<TaskDetailResponse> taskDetail(
+    String token, {
+    required int projectId,
+    required int milestoneId,
+    required int ref,
+  }) async {
+    final response = await http.get(
+      taigaUrl(
+          '/tasks/by_ref?milestone=$milestoneId&project=$projectId&ref=$ref'),
+      headers: getHeaders(token),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(jsonDecode(response.body)['detail'] ?? 'Task not found');
+    }
+    return TaskDetailResponse.fromJson(response.body);
   }
 
   static Future<bool> changeTaskStatus(

@@ -41,15 +41,16 @@ class TaigaCubit extends Cubit<TaigaState> {
           projectsClockify: [],
         ));
 
-  final taigaStorage = TaigaStorage();
   LoginTaigaResponse? loginTaiga;
+
+  Map<int, TaskStatusesProjectDetailTaiga?> mapTaskIdWithChangedStatus = {};
 
   void initState(BuildContext context) {}
 
   void initAfterLayout(BuildContext context) async {
     setupTodos();
     setupProjectClockfify();
-    loginTaiga = await taigaStorage.readLogin();
+    loginTaiga = await TaigaStorage().readLogin();
     if (loginTaiga != null) {
       await fetchProjects(
         context,
@@ -80,7 +81,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     int userId,
   ) async {
     emit(state.copyWith(loadingGlobal: true));
-    final cached = await taigaStorage.readProjects(userId);
+    final cached = await TaigaStorage().readProjects(userId);
     emit(state.copyWith(loadingGlobal: cached.isEmpty, projects: cached));
     try {
       final projects = await ServiceTaiga.projects(token, userId);
@@ -115,7 +116,7 @@ class TaigaCubit extends Cubit<TaigaState> {
   ) async {
     if (state.loadingProjectDetail) return;
     emit(state.copyWith(loadingMilestone: true));
-    final cached = await taigaStorage.readProjectDetail(project.slug ?? '');
+    final cached = await TaigaStorage().readProjectDetail(project.slug ?? '');
     emit(state.copyWith(
         loadingMilestone: cached == null, projectDetail: cached));
     try {
@@ -207,7 +208,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     int milestoneId,
   ) async {
     emit(state.copyWith(loadingMilestone: true));
-    final cached = await taigaStorage.readMilestone(milestoneId);
+    final cached = await TaigaStorage().readMilestone(milestoneId);
     emit(state.copyWith(loadingMilestone: false, milestone: cached));
   }
 
@@ -241,7 +242,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     int milestoneId,
   ) async {
     emit(state.copyWith(loadingTask: true));
-    final cached = await taigaStorage.readTasks(projectId, milestoneId);
+    final cached = await TaigaStorage().readTasks(projectId, milestoneId);
     emit(state.copyWith(
       loadingTask: false,
       tasks: cached,
@@ -307,14 +308,26 @@ class TaigaCubit extends Cubit<TaigaState> {
     }
   }
 
+  void onClosePressed(BuildContext context) {
+    Navigator.of(context).pop({
+      'project_detail': state.projectDetail,
+      'task_to_do': state.taskToTodo,
+      'project_clockify': state.selectedProjectClockify,
+      'map_task_id_with_changed_status': mapTaskIdWithChangedStatus,
+    });
+  }
+
   void onAddToTodo(BuildContext context) {
-    if (state.projectDetail == null || state.taskToTodo.isEmpty) {
+    if (state.projectDetail == null ||
+        state.taskToTodo.isEmpty ||
+        mapTaskIdWithChangedStatus.isEmpty) {
       return;
     }
     Navigator.of(context).pop({
       'project_detail': state.projectDetail,
       'task_to_do': state.taskToTodo,
       'project_clockify': state.selectedProjectClockify,
+      'map_task_id_with_changed_status': mapTaskIdWithChangedStatus,
     });
   }
 
@@ -367,5 +380,65 @@ class TaigaCubit extends Cubit<TaigaState> {
   void onProjectClockifySelected(ProjectClockify? value) async {
     emit(state.setSelectedProjectClockify(selectedProjectClockify: value));
     await SettingStorage().writeSelectedProjectClockify(value);
+  }
+
+  void onEditTaigaStatus(
+    BuildContext context,
+    TasksResponse task,
+    TaskStatusesProjectDetailTaiga? value,
+    bool alreadyInTodo,
+  ) async {
+    emit(state.copyWith(loadingContent: true));
+    if (loginTaiga != null &&
+        state.projectDetail != null &&
+        state.milestone != null) {
+      final taskDetail = await ServiceTaiga.taskDetail(
+        loginTaiga!.authToken ?? '',
+        projectId: state.projectDetail?.id ?? 0,
+        milestoneId: state.milestone?.id ?? 0,
+        ref: task.ref ?? 0,
+      );
+
+      final success = await ServiceTaiga.changeTaskStatus(
+        loginTaiga!.authToken ?? '',
+        taskId: taskDetail.id ?? 0,
+        statusId: value?.id ?? 0,
+        version: taskDetail.version ?? 0,
+      );
+
+      if (!success) {
+        context.showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red[100],
+            content: Text(
+              '''Oops, something went wrong...
+Some other user inside Taiga has changed this before and your changes can’t be applied. Save them elsewhere, reload the page and re-apply your changes again or they will be lost.''',
+              style: TextStyle(fontSize: 20, color: Colors.red[700]),
+            ),
+          ),
+        );
+      } else {
+        mapTaskIdWithChangedStatus[taskDetail.id ?? 0] = value;
+
+        List<TasksResponse> tasks = List.from(state.tasks);
+        final indexTask = tasks.indexWhere((element) => element.id == task.id);
+        if (indexTask != -1) {
+          tasks[indexTask] = tasks[indexTask].copyWith(
+            status: value?.id,
+            statusExtraInfo: tasks[indexTask].statusExtraInfo?.copyWith(
+                  name: value?.name,
+                  color: value?.color,
+                  isClosed: value?.isClosed,
+                ),
+          );
+          await TaigaStorage().writeTasks(
+            state.projectDetail?.id ?? 0,
+            state.milestone?.id ?? 0,
+            tasks,
+          );
+        }
+      }
+    }
+    emit(state.copyWith(loadingContent: false));
   }
 }

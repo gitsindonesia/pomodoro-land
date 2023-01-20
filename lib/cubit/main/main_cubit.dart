@@ -54,10 +54,6 @@ class MainCubit extends Cubit<MainState> {
   Duration defaultPomodoro = const Duration(minutes: 25);
   Duration defaultShortBreak = const Duration(minutes: 5);
   Duration defaultLongBreak = const Duration(minutes: 15);
-  final todoStorage = TodoStorage();
-  final historyStorage = HistoryStorage();
-  final settingStorage = SettingStorage();
-  final taigaStorage = TaigaStorage();
 
   final buttonPlayer = AudioPlayer(playerId: 'buttonPlayer');
   final belPlayer = AudioPlayer(playerId: 'belPlayer');
@@ -79,12 +75,12 @@ class MainCubit extends Cubit<MainState> {
   }
 
   void initAfterLayout(BuildContext context) async {
-    List<Todo> newTodos = await todoStorage.read();
+    List<Todo> newTodos = await TodoStorage().read();
     newTodos = newTodos
         .where((element) =>
             _calculateDifference(element.dateTime) == 0 || !element.checklist)
         .toList();
-    final newHistory = await historyStorage.read();
+    final newHistory = await HistoryStorage().read();
     emit(state.copyWith(todos: newTodos, history: newHistory));
 
     await setupSetting();
@@ -92,19 +88,20 @@ class MainCubit extends Cubit<MainState> {
 
   Future<void> setupSetting() async {
     final oldDefaultPomodoro = defaultPomodoro;
-    defaultPomodoro = await settingStorage.readPomodoroDuration();
-    defaultShortBreak = await settingStorage.readShortBreakDuration();
-    defaultLongBreak = await settingStorage.readLongBreakDuration();
-    autoStartBreak = await settingStorage.readAutoStartBreak();
-    autoStartPomodoro = await settingStorage.readAutoStartPomodoro();
+    defaultPomodoro = await SettingStorage().readPomodoroDuration();
+    defaultShortBreak = await SettingStorage().readShortBreakDuration();
+    defaultLongBreak = await SettingStorage().readLongBreakDuration();
+    autoStartBreak = await SettingStorage().readAutoStartBreak();
+    autoStartPomodoro = await SettingStorage().readAutoStartPomodoro();
 
-    apiKeyClockify = await settingStorage.readApiKeyClockify();
-    user = await settingStorage.readUserClockify();
-    selectedWorkspace = await settingStorage.readSelectedWorkspaceClockify();
-    final projects = await settingStorage.readProjectsClockify();
-    final selectedProject = await settingStorage.readSelectedProjectClockify();
+    apiKeyClockify = await SettingStorage().readApiKeyClockify();
+    user = await SettingStorage().readUserClockify();
+    selectedWorkspace = await SettingStorage().readSelectedWorkspaceClockify();
+    final projects = await SettingStorage().readProjectsClockify();
+    final selectedProject =
+        await SettingStorage().readSelectedProjectClockify();
 
-    loginTaiga = await taigaStorage.readLogin();
+    loginTaiga = await TaigaStorage().readLogin();
 
     emit(state.copyWith(
       duration: oldDefaultPomodoro == defaultPomodoro ? null : defaultPomodoro,
@@ -208,12 +205,12 @@ class MainCubit extends Cubit<MainState> {
     } else if (index >= 0 && newTodos.isNotEmpty) {
       history[index] = History(date: now, todos: newTodos);
     }
-    historyStorage.write(now, history);
+    HistoryStorage().write(now, history);
     emit(state.copyWith(history: history));
   }
 
   void writeCacheTodo() async {
-    await todoStorage.write(state.todos);
+    await TodoStorage().write(state.todos);
   }
 
   void onAcceptDrag(Todo todo) {
@@ -278,7 +275,7 @@ class MainCubit extends Cubit<MainState> {
 
   void onProjectSelected(ProjectClockify? selectedProject) async {
     emit(state.setSelectedProject(selectedProject));
-    await settingStorage.writeSelectedProjectClockify(selectedProject);
+    await SettingStorage().writeSelectedProjectClockify(selectedProject);
   }
 
   void onEditTodoComplete(Todo todo, String task) {
@@ -419,28 +416,60 @@ class MainCubit extends Cubit<MainState> {
     if (loginTaiga != null) {
       final result = await showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) => const TaigaDashboard(),
       );
 
       if (result is Map) {
-        final ProjectDetailTaigaResponse projectDetail =
+        final ProjectDetailTaigaResponse? projectDetail =
             result['project_detail'];
         final List<TasksResponse> tasks = result['task_to_do'];
         final ProjectClockify? project = result['project_clockify'];
-        final todos = tasks
+        final Map<int, TaskStatusesProjectDetailTaiga?>
+            mapTaskIdWithChangedStatus =
+            result['map_task_id_with_changed_status'];
+        final newTodos = tasks
             .map((e) => Todo(
                   checklist: false,
                   task: '#${e.ref} ${e.subject}',
                   dateTime: DateTime.now(),
-                  taiga: Taiga(projectDetail: projectDetail, taskTaiga: e),
+                  taiga: projectDetail == null
+                      ? null
+                      : Taiga(projectDetail: projectDetail, taskTaiga: e),
                   project: project,
                 ))
             .toList();
+        final todos = [...state.todos, ...newTodos];
         emit(state.copyWith(
-          todos: [...state.todos, ...todos],
+          todos: [...state.todos, ...newTodos],
         ));
         emit(state.setSelectedProject(project));
         writeCacheTodo();
+
+        final todoWithTaiga =
+            todos.where((element) => element.taiga != null).toList();
+        for (var todo in todoWithTaiga) {
+          final value =
+              mapTaskIdWithChangedStatus[todo.taiga?.taskTaiga.id ?? -1];
+          if (value != null) {
+            updateTodo(
+              todo,
+              todo.copyWith(
+                taiga: todo.taiga?.copyWith(
+                  taskTaiga: todo.taiga?.taskTaiga.copyWith(
+                    status: value.id,
+                    statusExtraInfo:
+                        todo.taiga?.taskTaiga.statusExtraInfo?.copyWith(
+                      name: value.name,
+                      color: value.color,
+                      isClosed: value.isClosed,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        }
       }
     }
   }
@@ -476,11 +505,18 @@ class MainCubit extends Cubit<MainState> {
   ) async {
     emit(state.copyWith(loadingGlobal: true));
     if (loginTaiga != null) {
+      final taskDetail = await ServiceTaiga.taskDetail(
+        loginTaiga!.authToken ?? '',
+        projectId: todo.taiga?.projectDetail.id ?? 0,
+        milestoneId: todo.taiga?.taskTaiga.milestone ?? 0,
+        ref: todo.taiga?.taskTaiga.ref ?? 0,
+      );
+
       final success = await ServiceTaiga.changeTaskStatus(
         loginTaiga!.authToken ?? '',
-        taskId: todo.taiga?.taskTaiga.id ?? 0,
+        taskId: taskDetail.id ?? 0,
         statusId: value?.id ?? 0,
-        version: todo.taiga?.taskTaiga.version ?? 0,
+        version: taskDetail.version ?? 0,
       );
 
       if (!success) {
@@ -501,7 +537,6 @@ Some other user inside Taiga has changed this before and your changes can’t be
           todo.copyWith(
             taiga: todo.taiga?.copyWith(
               taskTaiga: todo.taiga?.taskTaiga.copyWith(
-                version: (todo.taiga?.taskTaiga.version ?? 0) + 1,
                 status: value?.id,
                 statusExtraInfo:
                     todo.taiga?.taskTaiga.statusExtraInfo?.copyWith(

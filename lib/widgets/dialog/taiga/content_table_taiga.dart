@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../constants/images.dart';
 import '../../../cubit/taiga/taiga_cubit.dart';
-import '../../../utils/extension.dart';
 import '../../ink_well_pressed.dart';
+import 'dropdown_taiga_status.dart';
 
 class ContentTableTaiga extends StatelessWidget {
   const ContentTableTaiga({super.key});
@@ -18,6 +18,8 @@ class ContentTableTaiga extends StatelessWidget {
     final taskToTodo =
         context.select((TaigaCubit bloc) => bloc.state.taskToTodo);
     final todos = context.select((TaigaCubit bloc) => bloc.state.todos);
+    final projectDetail =
+        context.select((TaigaCubit bloc) => bloc.state.projectDetail);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 0, 0, 16),
@@ -94,8 +96,8 @@ class ContentTableTaiga extends StatelessWidget {
                                 color: backgroundColor,
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -127,14 +129,13 @@ class ContentTableTaiga extends StatelessWidget {
                                   const SizedBox(width: 32),
                                   SizedBox(
                                     width: 150,
-                                    child: Text(
-                                      e.statusExtraInfo?.name ?? '',
-                                      maxLines: 1,
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                            e.statusExtraInfo?.color?.toColor(),
-                                      ),
+                                    child: DropdownTaigaStatus(
+                                      items: projectDetail?.taskStatuses ?? [],
+                                      initialSelectedTaigaStatusId: e.status,
+                                      onTaigaStatus: (value) => context
+                                          .read<TaigaCubit>()
+                                          .onEditTaigaStatus(
+                                              context, e, value, alreadyInTodo),
                                     ),
                                   ),
                                   const SizedBox(width: 32),

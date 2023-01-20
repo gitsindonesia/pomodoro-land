@@ -63,7 +63,9 @@ class _TaigaDashboardState extends State<TaigaDashboard> {
                                   style: TextStyle(fontSize: 40)),
                               const Spacer(),
                               InkWellPressed(
-                                onPressed: () => Navigator.of(context).pop(),
+                                onPressed: () => context
+                                    .read<TaigaCubit>()
+                                    .onClosePressed(context),
                                 child: Image.asset(Images.close, width: 60),
                               ),
                             ],
