@@ -12,8 +12,8 @@ class SidebarSection extends StatelessWidget {
     final projects = context.select((TaigaCubit bloc) => bloc.state.projects);
     final selectedProject =
         context.select((TaigaCubit bloc) => bloc.state.selectedProject);
-    final loadingContent =
-        context.select((TaigaCubit bloc) => bloc.state.loadingMilestone);
+    final loadingProjectDetail =
+        context.select((TaigaCubit bloc) => bloc.state.loadingProjectDetail);
     final projectDetail =
         context.select((TaigaCubit bloc) => bloc.state.projectDetail);
     final selectedMilestoneId =
@@ -31,7 +31,7 @@ class SidebarSection extends StatelessWidget {
             }
           },
           children: [
-            if (loadingContent)
+            if (loadingProjectDetail)
               const Padding(
                 padding: EdgeInsets.all(16),
                 child: SizedBox(
@@ -42,7 +42,7 @@ class SidebarSection extends StatelessWidget {
                   ),
                 ),
               ),
-            if (!loadingContent && projectDetail != null) ...[
+            if (!loadingProjectDetail && projectDetail != null) ...[
               ...(projectDetail.milestones?.reversed
                           .where((element) => element.closed == false) ??
                       [])

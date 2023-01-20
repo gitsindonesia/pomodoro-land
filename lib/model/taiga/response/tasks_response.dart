@@ -264,6 +264,86 @@ class TasksResponse {
         isClosed.hashCode ^
         userStoryExtraInfo.hashCode;
   }
+
+  TasksResponse copyWith({
+    dynamic dueDate,
+    String? dueDateReason,
+    String? dueDateStatus,
+    int? totalComments,
+    List<dynamic>? tags,
+    List<dynamic>? attachments,
+    int? project,
+    ProjectExtraInfoTasks? projectExtraInfo,
+    int? status,
+    StatusExtraInfoTasks? statusExtraInfo,
+    int? assignedTo,
+    AssignedToExtraInfoTasks? assignedToExtraInfo,
+    int? owner,
+    OwnerExtraInfoTasks? ownerExtraInfo,
+    bool? isWatcher,
+    int? totalWatchers,
+    bool? isVoter,
+    int? totalVoters,
+    int? id,
+    int? userStory,
+    int? ref,
+    int? milestone,
+    String? milestoneSlug,
+    DateTime? createdDate,
+    DateTime? modifiedDate,
+    dynamic finishedDate,
+    String? subject,
+    int? usOrder,
+    int? taskboardOrder,
+    bool? isIocaine,
+    dynamic externalReference,
+    int? version,
+    List<dynamic>? watchers,
+    bool? isBlocked,
+    String? blockedNote,
+    bool? isClosed,
+    UserStoryExtraInfoTasks? userStoryExtraInfo,
+  }) {
+    return TasksResponse(
+      dueDate: dueDate ?? this.dueDate,
+      dueDateReason: dueDateReason ?? this.dueDateReason,
+      dueDateStatus: dueDateStatus ?? this.dueDateStatus,
+      totalComments: totalComments ?? this.totalComments,
+      tags: tags ?? this.tags,
+      attachments: attachments ?? this.attachments,
+      project: project ?? this.project,
+      projectExtraInfo: projectExtraInfo ?? this.projectExtraInfo,
+      status: status ?? this.status,
+      statusExtraInfo: statusExtraInfo ?? this.statusExtraInfo,
+      assignedTo: assignedTo ?? this.assignedTo,
+      assignedToExtraInfo: assignedToExtraInfo ?? this.assignedToExtraInfo,
+      owner: owner ?? this.owner,
+      ownerExtraInfo: ownerExtraInfo ?? this.ownerExtraInfo,
+      isWatcher: isWatcher ?? this.isWatcher,
+      totalWatchers: totalWatchers ?? this.totalWatchers,
+      isVoter: isVoter ?? this.isVoter,
+      totalVoters: totalVoters ?? this.totalVoters,
+      id: id ?? this.id,
+      userStory: userStory ?? this.userStory,
+      ref: ref ?? this.ref,
+      milestone: milestone ?? this.milestone,
+      milestoneSlug: milestoneSlug ?? this.milestoneSlug,
+      createdDate: createdDate ?? this.createdDate,
+      modifiedDate: modifiedDate ?? this.modifiedDate,
+      finishedDate: finishedDate ?? this.finishedDate,
+      subject: subject ?? this.subject,
+      usOrder: usOrder ?? this.usOrder,
+      taskboardOrder: taskboardOrder ?? this.taskboardOrder,
+      isIocaine: isIocaine ?? this.isIocaine,
+      externalReference: externalReference ?? this.externalReference,
+      version: version ?? this.version,
+      watchers: watchers ?? this.watchers,
+      isBlocked: isBlocked ?? this.isBlocked,
+      blockedNote: blockedNote ?? this.blockedNote,
+      isClosed: isClosed ?? this.isClosed,
+      userStoryExtraInfo: userStoryExtraInfo ?? this.userStoryExtraInfo,
+    );
+  }
 }
 
 class ProjectExtraInfoTasks {
@@ -363,6 +443,18 @@ class StatusExtraInfoTasks {
 
   @override
   int get hashCode => name.hashCode ^ color.hashCode ^ isClosed.hashCode;
+
+  StatusExtraInfoTasks copyWith({
+    String? name,
+    String? color,
+    bool? isClosed,
+  }) {
+    return StatusExtraInfoTasks(
+      name: name ?? this.name,
+      color: color ?? this.color,
+      isClosed: isClosed ?? this.isClosed,
+    );
+  }
 }
 
 class AssignedToExtraInfoTasks {

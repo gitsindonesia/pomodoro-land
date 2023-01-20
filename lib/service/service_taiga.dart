@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:pomodoro_land/model/taiga/body/login_taiga_body.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
+import 'package:pomodoro_land/model/taiga/response/milestone_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
@@ -11,10 +12,15 @@ import 'package:pomodoro_land/storage/taiga_storage.dart';
 abstract class ServiceTaiga {
   static Uri taigaUrl(String path) =>
       Uri.parse('https://taiga.gits.id/api/v1$path');
-  static Map<String, String> getHeaders(String token) => {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
+  static Map<String, String> getHeaders(String token,
+      [Map<String, String>? custom]) {
+    final header = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+    header.addAll(custom ?? {});
+    return header;
+  }
 
   static Future<LoginTaigaResponse> login(LoginTaigaBody body) async {
     final response = await http.post(
@@ -66,6 +72,21 @@ abstract class ServiceTaiga {
     return projectDetail;
   }
 
+  static Future<MilestoneResponse> milestone(
+      String token, int milestoneId) async {
+    final response = await http.get(
+      taigaUrl('/milestones/$milestoneId'),
+      headers: getHeaders(token),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+          jsonDecode(response.body)['detail'] ?? 'Milestone not found');
+    }
+    final milestone = MilestoneResponse.fromJson(response.body);
+    await TaigaStorage().writeMilestone(milestoneId, milestone);
+    return milestone;
+  }
+
   static Future<List<TasksResponse>> tasks(
     String token,
     int projectId,
@@ -74,7 +95,7 @@ abstract class ServiceTaiga {
     final response = await http.get(
       taigaUrl(
           '/tasks?project=$projectId&milestone=$milestoneId&order_by=us_order'),
-      headers: getHeaders(token),
+      headers: getHeaders(token, {'x-disable-pagination': '1'}),
     );
     if (response.statusCode != 200) {
       throw Exception(jsonDecode(response.body)['detail'] ?? 'Tasks not found');
@@ -86,5 +107,25 @@ abstract class ServiceTaiga {
       return tasks;
     }
     throw Exception('Tasks not found');
+  }
+
+  static Future<bool> changeTaskStatus(
+    String token, {
+    required int taskId,
+    required int statusId,
+    required int version,
+  }) async {
+    final response = await http.patch(
+      taigaUrl('/tasks/$taskId'),
+      headers: getHeaders(token),
+      body: jsonEncode({
+        'status': statusId,
+        'version': version,
+      }),
+    );
+    if (response.statusCode != 200) {
+      return false;
+    }
+    return true;
   }
 }

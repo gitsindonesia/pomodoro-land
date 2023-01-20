@@ -52,7 +52,9 @@ class _ItemTodoState extends State<ItemTodo> {
             setState(() {
               selectedTaigaStatusId = value?.id;
             });
-            context.read<MainCubit>().onEditTaigaStatusTodo(widget.todo, value);
+            context
+                .read<MainCubit>()
+                .onEditTaigaStatusTodo(context, widget.todo, value);
           });
     } else if (taiga != null) {
       taigaWidget = Row(

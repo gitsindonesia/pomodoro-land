@@ -32,6 +32,8 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     final isStart = context.select((MainCubit bloc) => bloc.state.isStart);
     final duration = context.select((MainCubit bloc) => bloc.state.duration);
+    final loadingGlobal =
+        context.select((MainCubit bloc) => bloc.state.loadingGlobal);
 
     return MaterialApp(
       title: '${isStart ? '${duration.toMMss()} - ' : ''}Pomodoro Land',
@@ -44,6 +46,10 @@ class _MainPageState extends State<MainPage> {
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (loadingGlobal)
+                const LinearProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation(Colors.black),
+                ),
               Row(
                 children: [
                   const SizedBox(width: 32),

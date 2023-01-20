@@ -99,6 +99,7 @@ class TodoList extends StatelessWidget {
                   delegate: SliverChildListDelegate(
                     taskOnGoing
                         .map((e) => ItemTodo(
+                              key: ValueKey(e.toString()),
                               todo: e,
                               selected: e.task == focusTodo?.task,
                             ))
@@ -109,24 +110,11 @@ class TodoList extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Row(
-                      children: [
-                        const Text(
+                      children: const [
+                        Text(
                           'Task done',
                           style: TextStyle(fontSize: 24),
                         ),
-                        if (taskDone.isNotEmpty) ...[
-                          const Spacer(),
-                          InkWellPressed(
-                            onPressed: () => context
-                                .read<MainCubit>()
-                                .onDeleteAllTodo(context, true),
-                            child: const Text(
-                              'Delete All',
-                              style: TextStyle(fontSize: 24, color: Colors.red),
-                            ),
-                          ),
-                          const SizedBox(width: 32),
-                        ],
                       ],
                     ),
                   ),
@@ -135,6 +123,7 @@ class TodoList extends StatelessWidget {
                   delegate: SliverChildListDelegate(
                     taskDone
                         .map((e) => ItemTodo(
+                              key: ValueKey(e.toString()),
                               todo: e,
                               selected: e.task == focusTodo?.task,
                             ))

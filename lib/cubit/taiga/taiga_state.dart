@@ -3,8 +3,10 @@ part of 'taiga_cubit.dart';
 class TaigaState {
   TaigaState({
     required this.loadingGlobal,
+    required this.loadingProjectDetail,
     required this.loadingMilestone,
     required this.loadingTask,
+    required this.loadingContent,
     required this.projects,
     this.selectedProject,
     this.projectDetail,
@@ -15,11 +17,16 @@ class TaigaState {
     required this.allChecklist,
     this.filterAssign,
     this.filterProgress,
+    this.milestone,
+    required this.userStoryWithTask,
+    required this.todos,
   });
 
   final bool loadingGlobal;
+  final bool loadingProjectDetail;
   final bool loadingMilestone;
   final bool loadingTask;
+  final bool loadingContent;
   final List<ProjectTaigaResponse> projects;
   final ProjectTaigaResponse? selectedProject;
   final ProjectDetailTaigaResponse? projectDetail;
@@ -30,14 +37,19 @@ class TaigaState {
   final bool allChecklist;
   final MembersProjectDetailTaiga? filterAssign;
   final TaskStatusesProjectDetailTaiga? filterProgress;
+  final MilestoneResponse? milestone;
+  final List<GroupUserStoryWithTask> userStoryWithTask;
+  final List<Todo> todos;
 
   TaigaState setFilterAssign({
     MembersProjectDetailTaiga? filterAssign,
   }) {
     return TaigaState(
       loadingGlobal: loadingGlobal,
+      loadingProjectDetail: loadingProjectDetail,
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
+      loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
       projectDetail: projectDetail,
@@ -48,6 +60,9 @@ class TaigaState {
       filterAssign: filterAssign,
       filterProgress: filterProgress,
       filteredTasks: filteredTasks,
+      milestone: milestone,
+      userStoryWithTask: userStoryWithTask,
+      todos: todos,
     );
   }
 
@@ -55,8 +70,10 @@ class TaigaState {
       {TaskStatusesProjectDetailTaiga? filterProgress}) {
     return TaigaState(
       loadingGlobal: loadingGlobal,
+      loadingProjectDetail: loadingProjectDetail,
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
+      loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
       projectDetail: projectDetail,
@@ -67,13 +84,18 @@ class TaigaState {
       filterAssign: filterAssign,
       filterProgress: filterProgress,
       filteredTasks: filteredTasks,
+      milestone: milestone,
+      userStoryWithTask: userStoryWithTask,
+      todos: todos,
     );
   }
 
   TaigaState copyWith({
     bool? loadingGlobal,
+    bool? loadingProjectDetail,
     bool? loadingMilestone,
     bool? loadingTask,
+    bool? loadingContent,
     List<ProjectTaigaResponse>? projects,
     ProjectTaigaResponse? selectedProject,
     ProjectDetailTaigaResponse? projectDetail,
@@ -82,11 +104,16 @@ class TaigaState {
     int? selectedMilestoneId,
     List<TasksResponse>? taskToTodo,
     bool? allChecklist,
+    MilestoneResponse? milestone,
+    List<GroupUserStoryWithTask>? userStoryWithTask,
+    List<Todo>? todos,
   }) {
     return TaigaState(
       loadingGlobal: loadingGlobal ?? this.loadingGlobal,
+      loadingProjectDetail: loadingProjectDetail ?? this.loadingProjectDetail,
       loadingMilestone: loadingMilestone ?? this.loadingMilestone,
       loadingTask: loadingTask ?? this.loadingTask,
+      loadingContent: loadingContent ?? this.loadingContent,
       projects: projects ?? this.projects,
       selectedProject: selectedProject ?? this.selectedProject,
       projectDetail: projectDetail ?? this.projectDetail,
@@ -97,6 +124,9 @@ class TaigaState {
       allChecklist: allChecklist ?? this.allChecklist,
       filterAssign: filterAssign,
       filterProgress: filterProgress,
+      milestone: milestone ?? this.milestone,
+      userStoryWithTask: userStoryWithTask ?? this.userStoryWithTask,
+      todos: todos ?? this.todos,
     );
   }
 
@@ -106,8 +136,10 @@ class TaigaState {
 
     return other is TaigaState &&
         other.loadingGlobal == loadingGlobal &&
+        other.loadingProjectDetail == loadingProjectDetail &&
         other.loadingMilestone == loadingMilestone &&
         other.loadingTask == loadingTask &&
+        other.loadingContent == loadingContent &&
         listEquals(other.projects, projects) &&
         other.selectedProject == selectedProject &&
         other.projectDetail == projectDetail &&
@@ -117,14 +149,19 @@ class TaigaState {
         listEquals(other.taskToTodo, taskToTodo) &&
         other.allChecklist == allChecklist &&
         other.filterAssign == filterAssign &&
-        other.filterProgress == filterProgress;
+        other.filterProgress == filterProgress &&
+        other.milestone == milestone &&
+        listEquals(other.userStoryWithTask, userStoryWithTask) &&
+        listEquals(other.todos, todos);
   }
 
   @override
   int get hashCode {
     return loadingGlobal.hashCode ^
+        loadingProjectDetail.hashCode ^
         loadingMilestone.hashCode ^
         loadingTask.hashCode ^
+        loadingContent.hashCode ^
         projects.hashCode ^
         selectedProject.hashCode ^
         projectDetail.hashCode ^
@@ -134,6 +171,9 @@ class TaigaState {
         taskToTodo.hashCode ^
         allChecklist.hashCode ^
         filterAssign.hashCode ^
-        filterProgress.hashCode;
+        filterProgress.hashCode ^
+        milestone.hashCode ^
+        userStoryWithTask.hashCode ^
+        todos.hashCode;
   }
 }

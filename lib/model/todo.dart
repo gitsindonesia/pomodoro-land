@@ -65,4 +65,25 @@ class Todo {
         project.hashCode ^
         taiga.hashCode;
   }
+
+  Todo copyWith({
+    bool? checklist,
+    String? task,
+    DateTime? dateTime,
+    ProjectClockify? project,
+    Taiga? taiga,
+  }) {
+    return Todo(
+      checklist: checklist ?? this.checklist,
+      task: task ?? this.task,
+      dateTime: dateTime ?? this.dateTime,
+      project: project ?? this.project,
+      taiga: taiga ?? this.taiga,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Todo(checklist: $checklist, task: $task, dateTime: $dateTime, project: $project, taiga: $taiga)';
+  }
 }

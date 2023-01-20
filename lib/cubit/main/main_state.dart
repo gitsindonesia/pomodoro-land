@@ -15,6 +15,7 @@ class MainState {
     required this.loadingAddTimeClockify,
     required this.indexTabPomodoro,
     required this.startDateTimeTask,
+    required this.loadingGlobal,
   });
 
   final int round;
@@ -30,6 +31,7 @@ class MainState {
   final bool loadingAddTimeClockify;
   final int indexTabPomodoro;
   final DateTime startDateTimeTask;
+  final bool loadingGlobal;
 
   MainState setFocusTodo(Todo? focusTodo) {
     return MainState(
@@ -46,6 +48,7 @@ class MainState {
       loadingAddTimeClockify: loadingAddTimeClockify,
       indexTabPomodoro: indexTabPomodoro,
       startDateTimeTask: startDateTimeTask,
+      loadingGlobal: loadingGlobal,
     );
   }
 
@@ -64,6 +67,7 @@ class MainState {
       loadingAddTimeClockify: loadingAddTimeClockify,
       indexTabPomodoro: indexTabPomodoro,
       startDateTimeTask: startDateTimeTask,
+      loadingGlobal: loadingGlobal,
     );
   }
 
@@ -79,6 +83,7 @@ class MainState {
     bool? loadingAddTimeClockify,
     int? indexTabPomodoro,
     DateTime? startDateTimeTask,
+    bool? loadingGlobal,
   }) {
     return MainState(
       round: round ?? this.round,
@@ -95,6 +100,7 @@ class MainState {
           loadingAddTimeClockify ?? this.loadingAddTimeClockify,
       indexTabPomodoro: indexTabPomodoro ?? this.indexTabPomodoro,
       startDateTimeTask: startDateTimeTask ?? this.startDateTimeTask,
+      loadingGlobal: loadingGlobal ?? this.loadingGlobal,
     );
   }
 
@@ -115,7 +121,8 @@ class MainState {
         other.selectedProject == selectedProject &&
         other.loadingAddTimeClockify == loadingAddTimeClockify &&
         other.indexTabPomodoro == indexTabPomodoro &&
-        other.startDateTimeTask == startDateTimeTask;
+        other.startDateTimeTask == startDateTimeTask &&
+        other.loadingGlobal == loadingGlobal;
   }
 
   @override
@@ -132,6 +139,7 @@ class MainState {
         selectedProject.hashCode ^
         loadingAddTimeClockify.hashCode ^
         indexTabPomodoro.hashCode ^
-        startDateTimeTask.hashCode;
+        startDateTimeTask.hashCode ^
+        loadingGlobal.hashCode;
   }
 }

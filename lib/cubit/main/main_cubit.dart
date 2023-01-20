@@ -13,7 +13,9 @@ import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 import 'package:pomodoro_land/service/service_clockify.dart';
+import 'package:pomodoro_land/service/service_taiga.dart';
 import 'package:pomodoro_land/storage/setting_storage.dart';
+import 'package:pomodoro_land/utils/extension.dart';
 import 'package:pomodoro_land/widgets/button.dart';
 import 'package:pomodoro_land/widgets/dialog/taiga/auth_taiga.dart';
 import 'package:pomodoro_land/widgets/dialog/taiga/taiga_dashboard.dart';
@@ -44,6 +46,7 @@ class MainCubit extends Cubit<MainState> {
           selectedProject: null,
           indexTabPomodoro: 0,
           startDateTimeTask: DateTime.now(),
+          loadingGlobal: false,
         ));
 
   final now = DateTime.now();
@@ -464,5 +467,51 @@ class MainCubit extends Cubit<MainState> {
   }
 
   void onEditTaigaStatusTodo(
-      Todo todo, TaskStatusesProjectDetailTaiga? value) {}
+    BuildContext context,
+    Todo todo,
+    TaskStatusesProjectDetailTaiga? value,
+  ) async {
+    emit(state.copyWith(loadingGlobal: true));
+    if (loginTaiga != null) {
+      final success = await ServiceTaiga.changeTaskStatus(
+        loginTaiga!.authToken ?? '',
+        taskId: todo.taiga?.taskTaiga.id ?? 0,
+        statusId: value?.id ?? 0,
+        version: todo.taiga?.taskTaiga.version ?? 0,
+      );
+
+      if (!success) {
+        // ignore: use_build_context_synchronously
+        context.showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red[100],
+            content: Text(
+              '''Oops, something went wrong...
+Some other user inside Taiga has changed this before and your changes can’t be applied. Save them elsewhere, reload the page and re-apply your changes again or they will be lost.''',
+              style: TextStyle(fontSize: 20, color: Colors.red[700]),
+            ),
+          ),
+        );
+      } else {
+        updateTodo(
+          todo,
+          todo.copyWith(
+            taiga: todo.taiga?.copyWith(
+              taskTaiga: todo.taiga?.taskTaiga.copyWith(
+                version: (todo.taiga?.taskTaiga.version ?? 0) + 1,
+                status: value?.id,
+                statusExtraInfo:
+                    todo.taiga?.taskTaiga.statusExtraInfo?.copyWith(
+                  name: value?.name,
+                  color: value?.color,
+                  isClosed: value?.isClosed,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+    emit(state.copyWith(loadingGlobal: false));
+  }
 }

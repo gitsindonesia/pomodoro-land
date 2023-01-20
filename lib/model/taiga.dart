@@ -40,4 +40,14 @@ class Taiga {
 
   @override
   int get hashCode => projectDetail.hashCode ^ taskTaiga.hashCode;
+
+  Taiga copyWith({
+    ProjectDetailTaigaResponse? projectDetail,
+    TasksResponse? taskTaiga,
+  }) {
+    return Taiga(
+      projectDetail: projectDetail ?? this.projectDetail,
+      taskTaiga: taskTaiga ?? this.taskTaiga,
+    );
+  }
 }
