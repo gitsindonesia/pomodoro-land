@@ -426,17 +426,20 @@ class MainCubit extends Cubit<MainState> {
         final ProjectDetailTaigaResponse projectDetail =
             result['project_detail'];
         final List<TasksResponse> tasks = result['task_to_do'];
+        final ProjectClockify? project = result['project_clockify'];
         final todos = tasks
             .map((e) => Todo(
                   checklist: false,
                   task: '#${e.ref} ${e.subject}',
                   dateTime: DateTime.now(),
                   taiga: Taiga(projectDetail: projectDetail, taskTaiga: e),
+                  project: project,
                 ))
             .toList();
         emit(state.copyWith(
           todos: [...state.todos, ...todos],
         ));
+        emit(state.setSelectedProject(project));
         writeCacheTodo();
       }
     }

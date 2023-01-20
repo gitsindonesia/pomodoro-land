@@ -20,6 +20,8 @@ class TaigaState {
     this.milestone,
     required this.userStoryWithTask,
     required this.todos,
+    required this.projectsClockify,
+    this.selectedProjectClockify,
   });
 
   final bool loadingGlobal;
@@ -40,6 +42,8 @@ class TaigaState {
   final MilestoneResponse? milestone;
   final List<GroupUserStoryWithTask> userStoryWithTask;
   final List<Todo> todos;
+  final List<ProjectClockify> projectsClockify;
+  final ProjectClockify? selectedProjectClockify;
 
   TaigaState setFilterAssign({
     MembersProjectDetailTaiga? filterAssign,
@@ -63,6 +67,8 @@ class TaigaState {
       milestone: milestone,
       userStoryWithTask: userStoryWithTask,
       todos: todos,
+      projectsClockify: projectsClockify,
+      selectedProjectClockify: selectedProjectClockify,
     );
   }
 
@@ -87,6 +93,35 @@ class TaigaState {
       milestone: milestone,
       userStoryWithTask: userStoryWithTask,
       todos: todos,
+      projectsClockify: projectsClockify,
+      selectedProjectClockify: selectedProjectClockify,
+    );
+  }
+
+  TaigaState setSelectedProjectClockify({
+    ProjectClockify? selectedProjectClockify,
+  }) {
+    return TaigaState(
+      loadingGlobal: loadingGlobal,
+      loadingProjectDetail: loadingProjectDetail,
+      loadingMilestone: loadingMilestone,
+      loadingTask: loadingTask,
+      loadingContent: loadingContent,
+      projects: projects,
+      selectedProject: selectedProject,
+      projectDetail: projectDetail,
+      tasks: tasks,
+      selectedMilestoneId: selectedMilestoneId,
+      taskToTodo: taskToTodo,
+      allChecklist: allChecklist,
+      filterAssign: filterAssign,
+      filterProgress: filterProgress,
+      filteredTasks: filteredTasks,
+      milestone: milestone,
+      userStoryWithTask: userStoryWithTask,
+      todos: todos,
+      projectsClockify: projectsClockify,
+      selectedProjectClockify: selectedProjectClockify,
     );
   }
 
@@ -107,6 +142,7 @@ class TaigaState {
     MilestoneResponse? milestone,
     List<GroupUserStoryWithTask>? userStoryWithTask,
     List<Todo>? todos,
+    List<ProjectClockify>? projectsClockify,
   }) {
     return TaigaState(
       loadingGlobal: loadingGlobal ?? this.loadingGlobal,
@@ -127,6 +163,8 @@ class TaigaState {
       milestone: milestone ?? this.milestone,
       userStoryWithTask: userStoryWithTask ?? this.userStoryWithTask,
       todos: todos ?? this.todos,
+      projectsClockify: projectsClockify ?? this.projectsClockify,
+      selectedProjectClockify: selectedProjectClockify,
     );
   }
 
@@ -152,7 +190,9 @@ class TaigaState {
         other.filterProgress == filterProgress &&
         other.milestone == milestone &&
         listEquals(other.userStoryWithTask, userStoryWithTask) &&
-        listEquals(other.todos, todos);
+        listEquals(other.todos, todos) &&
+        listEquals(other.projectsClockify, projectsClockify) &&
+        other.selectedProjectClockify == selectedProjectClockify;
   }
 
   @override
@@ -174,6 +214,8 @@ class TaigaState {
         filterProgress.hashCode ^
         milestone.hashCode ^
         userStoryWithTask.hashCode ^
-        todos.hashCode;
+        todos.hashCode ^
+        projectsClockify.hashCode ^
+        selectedProjectClockify.hashCode;
   }
 }

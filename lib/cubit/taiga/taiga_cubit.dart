@@ -14,8 +14,10 @@ import 'package:pomodoro_land/storage/taiga_storage.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../../model/clockify/project_clockify.dart';
 import '../../model/grouping_user_story_with_task.dart';
 import '../../model/todo.dart';
+import '../../storage/setting_storage.dart';
 import '../../storage/todo_storage.dart';
 
 part 'taiga_state.dart';
@@ -36,15 +38,17 @@ class TaigaCubit extends Cubit<TaigaState> {
           filteredTasks: [],
           userStoryWithTask: [],
           todos: [],
+          projectsClockify: [],
         ));
 
-  final todoStorage = TodoStorage();
   final taigaStorage = TaigaStorage();
   LoginTaigaResponse? loginTaiga;
 
   void initState(BuildContext context) {}
 
   void initAfterLayout(BuildContext context) async {
+    setupTodos();
+    setupProjectClockfify();
     loginTaiga = await taigaStorage.readLogin();
     if (loginTaiga != null) {
       await fetchProjects(
@@ -53,13 +57,21 @@ class TaigaCubit extends Cubit<TaigaState> {
         loginTaiga?.id ?? 0,
       );
     }
-    setupTodos();
   }
 
   void setupTodos() async {
-    List<Todo> todos = await todoStorage.read();
+    List<Todo> todos = await TodoStorage().read();
     todos = todos.where((element) => element.taiga != null).toList();
     emit(state.copyWith(todos: todos));
+  }
+
+  void setupProjectClockfify() async {
+    final projectsClockify = await SettingStorage().readProjectsClockify();
+    final selectedProjectClockify =
+        await SettingStorage().readSelectedProjectClockify();
+    emit(state.copyWith(projectsClockify: projectsClockify));
+    emit(state.setSelectedProjectClockify(
+        selectedProjectClockify: selectedProjectClockify));
   }
 
   Future<void> fetchProjects(
@@ -143,6 +155,13 @@ class TaigaCubit extends Cubit<TaigaState> {
       loadingContent: true,
     ));
     await Future.wait([
+      fetchMilestoneCache(context, milestone.id ?? 0),
+      fetchTasksCache(context, projectDetail.id ?? 0, milestone.id ?? 0),
+    ]);
+    setupGroupingUserStoryWithTask();
+    filterTask();
+
+    await Future.wait([
       fetchMilestone(
         context,
         loginTaiga?.authToken ?? '',
@@ -183,6 +202,15 @@ class TaigaCubit extends Cubit<TaigaState> {
     emit(state.copyWith(userStoryWithTask: userStoryWithTask));
   }
 
+  Future<void> fetchMilestoneCache(
+    BuildContext context,
+    int milestoneId,
+  ) async {
+    emit(state.copyWith(loadingMilestone: true));
+    final cached = await taigaStorage.readMilestone(milestoneId);
+    emit(state.copyWith(loadingMilestone: false, milestone: cached));
+  }
+
   Future<void> fetchMilestone(
     BuildContext context,
     String token,
@@ -190,8 +218,6 @@ class TaigaCubit extends Cubit<TaigaState> {
   ) async {
     if (state.loadingMilestone) return;
     emit(state.copyWith(loadingMilestone: true));
-    final cached = await taigaStorage.readMilestone(milestoneId);
-    emit(state.copyWith(loadingMilestone: cached == null, milestone: cached));
     try {
       final milestone = await ServiceTaiga.milestone(token, milestoneId);
       emit(state.copyWith(milestone: milestone));
@@ -209,6 +235,20 @@ class TaigaCubit extends Cubit<TaigaState> {
     emit(state.copyWith(loadingMilestone: false));
   }
 
+  Future<void> fetchTasksCache(
+    BuildContext context,
+    int projectId,
+    int milestoneId,
+  ) async {
+    emit(state.copyWith(loadingTask: true));
+    final cached = await taigaStorage.readTasks(projectId, milestoneId);
+    emit(state.copyWith(
+      loadingTask: false,
+      tasks: cached,
+      filteredTasks: cached,
+    ));
+  }
+
   Future<void> fetchTasks(
     BuildContext context,
     String token,
@@ -217,9 +257,6 @@ class TaigaCubit extends Cubit<TaigaState> {
   ) async {
     if (state.loadingTask) return;
     emit(state.copyWith(loadingTask: true));
-    final cached = await taigaStorage.readTasks(projectId, milestoneId);
-    emit(state.copyWith(
-        loadingTask: cached.isEmpty, tasks: cached, filteredTasks: cached));
     try {
       final tasks = await ServiceTaiga.tasks(token, projectId, milestoneId);
       emit(state.copyWith(tasks: tasks, filteredTasks: tasks));
@@ -277,6 +314,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     Navigator.of(context).pop({
       'project_detail': state.projectDetail,
       'task_to_do': state.taskToTodo,
+      'project_clockify': state.selectedProjectClockify,
     });
   }
 
@@ -324,5 +362,10 @@ class TaigaCubit extends Cubit<TaigaState> {
     await launchUrlString(
       'https://taiga.gits.id/project/${state.projectDetail?.slug}/task/${task.ref ?? 0}',
     );
+  }
+
+  void onProjectClockifySelected(ProjectClockify? value) async {
+    emit(state.setSelectedProjectClockify(selectedProjectClockify: value));
+    await SettingStorage().writeSelectedProjectClockify(value);
   }
 }

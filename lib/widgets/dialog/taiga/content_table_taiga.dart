@@ -78,7 +78,7 @@ class ContentTableTaiga extends StatelessWidget {
                                 null;
 
                             final selected = taskToTodo.firstWhereOrNull(
-                                    (element) => element == e) !=
+                                    (element) => element.id == e.id) !=
                                 null;
 
                             Color? backgroundColor;

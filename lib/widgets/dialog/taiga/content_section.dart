@@ -26,7 +26,7 @@ class ContentSection extends StatelessWidget {
     final filterAssign =
         context.select((TaigaCubit bloc) => bloc.state.filterAssign);
 
-    if (loadingTask || loadingMilestone) {
+    if ((loadingTask || loadingMilestone) && userStoryWithTask.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation(Colors.black),
