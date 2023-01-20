@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/model/clockify/project_clockify.dart';
+import 'package:pomodoro_land/utils/extension.dart';
+import 'package:pomodoro_land/widgets/dropdown_taiga_status.dart';
 import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../constants/images.dart';
@@ -26,19 +28,53 @@ class _ItemTodoState extends State<ItemTodo> {
   bool isEdit = false;
   String task = '';
   ProjectClockify? selectedProject;
+  int? selectedTaigaStatusId;
 
   @override
   void initState() {
     super.initState();
     task = widget.todo.task;
     selectedProject = widget.todo.project;
+    selectedTaigaStatusId = widget.todo.taiga?.taskTaiga.status;
   }
 
-  Widget? getProjectWidget(
+  Widget? getSubtitleWidget(
     List<ProjectClockify> projects,
   ) {
+    final taiga = widget.todo.taiga;
+
+    Widget? taigaWidget;
+    if (isEdit && taiga != null) {
+      taigaWidget = DropdownTaigaStatus(
+          items: taiga.projectDetail.taskStatuses ?? [],
+          selectedTaigaStatusId: selectedTaigaStatusId,
+          onTaigaStatus: (value) {
+            setState(() {
+              selectedTaigaStatusId = value?.id;
+            });
+            context.read<MainCubit>().onEditTaigaStatusTodo(widget.todo, value);
+          });
+    } else if (taiga != null) {
+      taigaWidget = Row(
+        children: [
+          Image.asset(Images.taiga, width: 24, height: 24),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              taiga.taskTaiga.statusExtraInfo?.name ?? '',
+              style: TextStyle(
+                fontSize: 14,
+                color: taiga.taskTaiga.statusExtraInfo?.color?.toColor(),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    Widget? projectWidget;
     if (isEdit && projects.isNotEmpty) {
-      return DropdownProjectClockify(
+      projectWidget = DropdownProjectClockify(
           items: projects,
           selectedProject: selectedProject,
           onProjectSelected: (value) {
@@ -48,13 +84,34 @@ class _ItemTodoState extends State<ItemTodo> {
             context.read<MainCubit>().onEditProjectTodo(widget.todo, value);
           });
     } else if (widget.todo.project != null) {
-      return Text(
-        widget.todo.project!.name,
-        style: TextStyle(fontSize: 14, color: widget.todo.project!.color),
+      projectWidget = Row(
+        children: [
+          Image.asset(Images.clockify, width: 24, height: 24),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              widget.todo.project!.name,
+              style: TextStyle(fontSize: 14, color: widget.todo.project!.color),
+            ),
+          ),
+        ],
       );
-    } else {
-      return null;
     }
+
+    if (taigaWidget != null && projectWidget != null) {
+      return Row(
+        children: [
+          Expanded(child: taigaWidget),
+          Expanded(child: projectWidget),
+        ],
+      );
+    } else if (taigaWidget != null) {
+      return taigaWidget;
+    } else if (projectWidget != null) {
+      return projectWidget;
+    }
+
+    return null;
   }
 
   @override
@@ -83,7 +140,7 @@ class _ItemTodoState extends State<ItemTodo> {
                   widget.todo.checklist
                       ? Images.checkActive
                       : Images.checkInactive,
-                  height: widget.todo.checklist ? 50 : 36,
+                  height: widget.todo.checklist ? 32 : 16,
                 ),
               ),
         title: isEdit
@@ -116,7 +173,7 @@ class _ItemTodoState extends State<ItemTodo> {
                 ],
               )
             : Text(widget.todo.task, style: const TextStyle(fontSize: 24)),
-        subtitle: getProjectWidget(projects),
+        subtitle: getSubtitleWidget(projects),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -129,13 +186,14 @@ class _ItemTodoState extends State<ItemTodo> {
                 }
                 isEdit = !isEdit;
               }),
-              child: Image.asset(isEdit ? Images.close : Images.edit),
+              child:
+                  Image.asset(isEdit ? Images.close : Images.edit, width: 32),
             ),
             const SizedBox(width: 16),
             InkWellPressed(
               onPressed: () =>
                   context.read<MainCubit>().onDeleteTodo(widget.todo),
-              child: Image.asset(Images.delete),
+              child: Image.asset(Images.delete, width: 32),
             ),
           ],
         ),

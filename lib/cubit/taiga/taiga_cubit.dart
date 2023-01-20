@@ -84,6 +84,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     String token,
     ProjectTaigaResponse project,
   ) async {
+    if (state.loadingMilestone) return;
     emit(state.copyWith(loadingMilestone: true));
     final cached = await storage.readProjectDetail(project.slug ?? '');
     emit(state.copyWith(
@@ -135,9 +136,14 @@ class TaigaCubit extends Cubit<TaigaState> {
     int projectId,
     int milestoneId,
   ) async {
+    if (state.loadingTask) return;
     emit(state.copyWith(loadingTask: true));
     final cached = await storage.readTasks(projectId, milestoneId);
-    emit(state.copyWith(loadingTask: cached.isEmpty, tasks: cached));
+    emit(state.copyWith(
+      loadingTask: cached.isEmpty,
+      tasks: cached,
+      filteredTasks: cached,
+    ));
     try {
       final tasks = await ServiceTaiga.tasks(token, projectId, milestoneId);
       emit(state.copyWith(tasks: tasks, filteredTasks: tasks));
@@ -176,7 +182,13 @@ class TaigaCubit extends Cubit<TaigaState> {
   }
 
   void onAddToTodo(BuildContext context) {
-    Navigator.of(context).pop(state.taskToTodo);
+    if (state.projectDetail == null || state.taskToTodo.isEmpty) {
+      return;
+    }
+    Navigator.of(context).pop({
+      'project_detail': state.projectDetail,
+      'task_to_do': state.taskToTodo,
+    });
   }
 
   void onClearTaskTodo() =>

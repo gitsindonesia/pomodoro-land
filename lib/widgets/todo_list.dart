@@ -68,9 +68,25 @@ class TodoList extends StatelessWidget {
           fit: BoxFit.fitWidth,
         ),
         const SizedBox(height: 16),
-        Text(
-          '${todos.where((element) => element.checklist).length} / ${todos.length} done',
-          style: const TextStyle(fontSize: 24),
+        Row(
+          children: [
+            Text(
+              '${todos.where((element) => element.checklist).length} / ${todos.length} done',
+              style: const TextStyle(fontSize: 24),
+            ),
+            if (taskOnGoing.isNotEmpty) ...[
+              const Spacer(),
+              InkWellPressed(
+                onPressed: () =>
+                    context.read<MainCubit>().onDeleteAllTodo(context, false),
+                child: const Text(
+                  'Delete All',
+                  style: TextStyle(fontSize: 24, color: Colors.red),
+                ),
+              ),
+              const SizedBox(width: 32),
+            ],
+          ],
         ),
         const SizedBox(height: 16),
         if (todos.isEmpty)
@@ -89,12 +105,29 @@ class TodoList extends StatelessWidget {
                         .toList(),
                   ),
                 ),
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Text(
-                      'Task done',
-                      style: TextStyle(fontSize: 24),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Task done',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                        if (taskDone.isNotEmpty) ...[
+                          const Spacer(),
+                          InkWellPressed(
+                            onPressed: () => context
+                                .read<MainCubit>()
+                                .onDeleteAllTodo(context, true),
+                            child: const Text(
+                              'Delete All',
+                              style: TextStyle(fontSize: 24, color: Colors.red),
+                            ),
+                          ),
+                          const SizedBox(width: 32),
+                        ],
+                      ],
                     ),
                   ),
                 ),

@@ -8,7 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:pomodoro_land/constants/sounds.dart';
 import 'package:pomodoro_land/model/clockify/project_clockify.dart';
 import 'package:pomodoro_land/model/clockify/workspace_clockify.dart';
+import 'package:pomodoro_land/model/taiga.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
+import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 import 'package:pomodoro_land/service/service_clockify.dart';
 import 'package:pomodoro_land/storage/setting_storage.dart';
@@ -186,6 +188,7 @@ class MainCubit extends Cubit<MainState> {
         task: todo.task,
         dateTime: todo.dateTime,
         project: todo.project,
+        taiga: todo.taiga,
       ),
     );
   }
@@ -284,6 +287,7 @@ class MainCubit extends Cubit<MainState> {
         task: task,
         dateTime: todo.dateTime,
         project: todo.project,
+        taiga: todo.taiga,
       ),
     );
   }
@@ -296,6 +300,7 @@ class MainCubit extends Cubit<MainState> {
         task: todo.task,
         dateTime: todo.dateTime,
         project: value,
+        taiga: todo.taiga,
       ),
     );
   }
@@ -409,18 +414,21 @@ class MainCubit extends Cubit<MainState> {
       }
     }
     if (loginTaiga != null) {
-      final tasks = await showDialog(
+      final result = await showDialog(
         context: context,
         builder: (context) => const TaigaDashboard(),
       );
 
-      if (tasks is List<TasksResponse> && tasks.isNotEmpty) {
+      if (result is Map) {
+        final ProjectDetailTaigaResponse projectDetail =
+            result['project_detail'];
+        final List<TasksResponse> tasks = result['task_to_do'];
         final todos = tasks
             .map((e) => Todo(
                   checklist: false,
                   task: '#${e.ref} ${e.subject}',
                   dateTime: DateTime.now(),
-                  taskTaiga: e,
+                  taiga: Taiga(projectDetail: projectDetail, taskTaiga: e),
                 ))
             .toList();
         emit(state.copyWith(
@@ -446,4 +454,15 @@ class MainCubit extends Cubit<MainState> {
       emit(state.copyWith(startDateTimeTask: startTime));
     }
   }
+
+  void onDeleteAllTodo(BuildContext context, bool checklist) {
+    List<Todo> todos = List<Todo>.from(state.todos);
+    todos.removeWhere((element) => element.checklist == checklist);
+    emit(state.copyWith(todos: todos));
+    writeCacheTodo();
+    addOrUpdateHistory(todos);
+  }
+
+  void onEditTaigaStatusTodo(
+      Todo todo, TaskStatusesProjectDetailTaiga? value) {}
 }

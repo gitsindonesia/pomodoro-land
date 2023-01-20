@@ -33,11 +33,11 @@ class HistoryList extends StatelessWidget {
               (e) => ListTile(
                 leading: Image.asset(
                   e.checklist ? Images.checkActive : Images.checkInactive,
-                  height: e.checklist ? 50 : 36,
+                  height: e.checklist ? 32 : 16,
                 ),
                 title: Text(
                   e.task,
-                  style: const TextStyle(fontSize: 24),
+                  style: const TextStyle(fontSize: 20),
                 ),
                 subtitle: e.project == null
                     ? null

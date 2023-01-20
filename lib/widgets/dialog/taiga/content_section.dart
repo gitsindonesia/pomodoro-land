@@ -197,7 +197,9 @@ class ContentSection extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          '#${e?.ref}',
+                                          e?.ref == null
+                                              ? 'Storyless tasks'
+                                              : '#${e?.ref}',
                                           style: const TextStyle(
                                             fontSize: 14,
                                             color: Colors.blue,
@@ -206,7 +208,9 @@ class ContentSection extends StatelessWidget {
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            e?.subject ?? '',
+                                            e?.ref != null
+                                                ? e?.subject ?? ''
+                                                : '',
                                             style:
                                                 const TextStyle(fontSize: 14),
                                           ),

@@ -52,13 +52,13 @@ class TaigaStorage {
     int milestoneId,
     List<TasksResponse> tasks,
   ) =>
-      storage.write('task_${milestoneId}_$projectId',
+      storage.write('task_${projectId}_$milestoneId',
           jsonEncode(tasks.map((e) => e.toMap()).toList()));
   Future<List<TasksResponse>> readTasks(
     int projectId,
     int milestoneId,
   ) async {
-    final data = await storage.read('task_${milestoneId}_$projectId');
+    final data = await storage.read('task_${projectId}_$milestoneId');
     if (data == null) return [];
     final decode = jsonDecode(data);
     return (decode as List).map((e) => TasksResponse.fromMap(e)).toList();
