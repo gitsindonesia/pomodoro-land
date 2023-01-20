@@ -84,6 +84,7 @@ class MainCubit extends Cubit<MainState> {
     emit(state.copyWith(todos: newTodos, history: newHistory));
 
     await setupSetting();
+    await setupTaigaStatus();
   }
 
   Future<void> setupSetting() async {
@@ -116,6 +117,27 @@ class MainCubit extends Cubit<MainState> {
       );
       emit(state.copyWith(projects: projects));
     }
+  }
+
+  Future<void> setupTaigaStatus() async {
+    emit(state.copyWith(loadingGlobal: true));
+    for (var todo in state.todos) {
+      if (todo.taiga == null) return;
+      final taskDetail = await ServiceTaiga.taskDetail(
+        loginTaiga?.authToken ?? '',
+        projectId: todo.taiga?.projectDetail.id ?? 0,
+        milestoneId: todo.taiga?.taskTaiga.milestone ?? 0,
+        ref: todo.taiga?.taskTaiga.ref ?? 0,
+      );
+      updateTodoTaskStatus(
+        todo: todo,
+        stasusId: taskDetail.status,
+        stasusName: taskDetail.statusExtraInfo?.name,
+        stasusColor: taskDetail.statusExtraInfo?.color,
+        stasusIsClosed: taskDetail.statusExtraInfo?.isClosed,
+      );
+    }
+    emit(state.copyWith(loadingGlobal: false));
   }
 
   void handleTimer(Timer timer) {
@@ -532,24 +554,39 @@ Some other user inside Taiga has changed this before and your changes can’t be
           ),
         );
       } else {
-        updateTodo(
-          todo,
-          todo.copyWith(
-            taiga: todo.taiga?.copyWith(
-              taskTaiga: todo.taiga?.taskTaiga.copyWith(
-                status: value?.id,
-                statusExtraInfo:
-                    todo.taiga?.taskTaiga.statusExtraInfo?.copyWith(
-                  name: value?.name,
-                  color: value?.color,
-                  isClosed: value?.isClosed,
-                ),
-              ),
-            ),
-          ),
+        updateTodoTaskStatus(
+          todo: todo,
+          stasusId: value?.id,
+          stasusName: value?.name,
+          stasusColor: value?.color,
+          stasusIsClosed: value?.isClosed,
         );
       }
     }
     emit(state.copyWith(loadingGlobal: false));
+  }
+
+  void updateTodoTaskStatus({
+    required Todo todo,
+    required int? stasusId,
+    required String? stasusName,
+    required String? stasusColor,
+    required bool? stasusIsClosed,
+  }) {
+    updateTodo(
+      todo,
+      todo.copyWith(
+        taiga: todo.taiga?.copyWith(
+          taskTaiga: todo.taiga?.taskTaiga.copyWith(
+            status: stasusId,
+            statusExtraInfo: todo.taiga?.taskTaiga.statusExtraInfo?.copyWith(
+              name: stasusName,
+              color: stasusColor,
+              isClosed: stasusIsClosed,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

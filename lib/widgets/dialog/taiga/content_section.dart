@@ -25,6 +25,8 @@ class ContentSection extends StatelessWidget {
         context.select((TaigaCubit bloc) => bloc.state.filterProgress);
     final filterAssign =
         context.select((TaigaCubit bloc) => bloc.state.filterAssign);
+    final selectedMilestoneId =
+        context.select((TaigaCubit bloc) => bloc.state.selectedMilestoneId);
 
     if ((loadingTask || loadingMilestone) && userStoryWithTask.isEmpty) {
       return const Center(
@@ -37,9 +39,11 @@ class ContentSection extends StatelessWidget {
     if (userStoryWithTask.isEmpty &&
         filterAssign == null &&
         filterProgress == null) {
-      return const EmptyState(
-        text: 'Task is empty, please select project and milestone first',
-      );
+      return const EmptyState(text: 'Please select your project and milestone');
+    }
+
+    if (selectedMilestoneId < 0) {
+      return const EmptyState(text: 'Select your milestone');
     }
 
     return Column(

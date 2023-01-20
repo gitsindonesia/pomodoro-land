@@ -38,6 +38,18 @@ class _ItemTodoState extends State<ItemTodo> {
     selectedTaigaStatusId = widget.todo.taiga?.taskTaiga.status;
   }
 
+  @override
+  void didUpdateWidget(covariant ItemTodo oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.todo != widget.todo) {
+      setState(() {
+        task = widget.todo.task;
+        selectedProject = widget.todo.project;
+        selectedTaigaStatusId = widget.todo.taiga?.taskTaiga.status;
+      });
+    }
+  }
+
   Widget? getSubtitleWidget(
     List<ProjectClockify> projects,
   ) {
@@ -142,7 +154,7 @@ class _ItemTodoState extends State<ItemTodo> {
                   widget.todo.checklist
                       ? Images.checkActive
                       : Images.checkInactive,
-                  height: widget.todo.checklist ? 32 : 16,
+                  height: widget.todo.checklist ? 32 : 24,
                 ),
               ),
         title: isEdit

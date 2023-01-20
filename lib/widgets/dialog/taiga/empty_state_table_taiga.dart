@@ -14,11 +14,20 @@ class EmptyStateTableTaiga extends StatelessWidget {
     final filterAssign =
         context.select((TaigaCubit bloc) => bloc.state.filterAssign);
 
-    return Expanded(
-      child: EmptyState(
-        text:
-            'Task is empty for ${filterProgress?.name ?? ''}${filterProgress != null ? ' and ' : ''}${filterAssign?.fullName ?? ''}',
-      ),
-    );
+    String message = 'Tasks is empty';
+    if (filterProgress != null || filterAssign != null) {
+      message += ' for ';
+    }
+    if (filterProgress != null) {
+      message += filterProgress.name ?? '';
+    }
+    if (filterProgress != null && filterAssign != null) {
+      message += ' and ';
+    }
+    if (filterAssign != null) {
+      message += filterAssign.fullName ?? '';
+    }
+
+    return EmptyState(text: message);
   }
 }

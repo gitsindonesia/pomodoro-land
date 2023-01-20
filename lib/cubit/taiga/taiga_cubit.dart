@@ -318,11 +318,6 @@ class TaigaCubit extends Cubit<TaigaState> {
   }
 
   void onAddToTodo(BuildContext context) {
-    if (state.projectDetail == null ||
-        state.taskToTodo.isEmpty ||
-        mapTaskIdWithChangedStatus.isEmpty) {
-      return;
-    }
     Navigator.of(context).pop({
       'project_detail': state.projectDetail,
       'task_to_do': state.taskToTodo,
