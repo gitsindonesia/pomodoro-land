@@ -30,7 +30,7 @@ class HeaderTableTaiga extends StatelessWidget {
           child: Row(
             children: [
               const SizedBox(
-                width: 300,
+                width: 200,
                 child: Text(
                   'User Story',
                   style: TextStyle(fontSize: 16),

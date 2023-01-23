@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/taiga/taiga_cubit.dart';
-import 'package:pomodoro_land/widgets/dialog/taiga/checkout_add_to_todo.dart';
 import 'package:pomodoro_land/widgets/dialog/taiga/content_table_taiga.dart';
 import 'package:pomodoro_land/widgets/dialog/taiga/empty_state_table_taiga.dart';
 import 'package:pomodoro_land/widgets/dialog/taiga/header_table_taiga.dart';
 
 import '../../empty_state.dart';
+import 'checkout_add_to_todo.dart';
+import 'issues_table_taiga.dart';
 
 class ContentSection extends StatelessWidget {
   const ContentSection({super.key});
@@ -28,7 +29,7 @@ class ContentSection extends StatelessWidget {
     final selectedMilestoneId =
         context.select((TaigaCubit bloc) => bloc.state.selectedMilestoneId);
 
-    if ((loadingTask || loadingMilestone) && userStoryWithTask.isEmpty) {
+    if (loadingTask || loadingMilestone) {
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation(Colors.black),
@@ -38,7 +39,8 @@ class ContentSection extends StatelessWidget {
 
     if (userStoryWithTask.isEmpty &&
         filterAssign == null &&
-        filterProgress == null) {
+        filterProgress == null &&
+        selectedMilestoneId < 0) {
       return const EmptyState(text: 'Please select your project and milestone');
     }
 
@@ -52,13 +54,22 @@ class ContentSection extends StatelessWidget {
           const LinearProgressIndicator(
             valueColor: AlwaysStoppedAnimation(Colors.black),
           ),
-        const HeaderTableTaiga(),
-        if (userStoryWithTask
-            .where((element) => element.tasks.isNotEmpty)
-            .isEmpty)
-          const Expanded(child: EmptyStateTableTaiga())
-        else
-          const Expanded(child: ContentTableTaiga()),
+        if (selectedMilestoneId > 0)
+          Expanded(
+            child: Column(
+              children: [
+                const HeaderTableTaiga(),
+                if (userStoryWithTask
+                    .where((element) => element.tasks.isNotEmpty)
+                    .isEmpty)
+                  const Expanded(child: EmptyStateTableTaiga())
+                else
+                  const Expanded(child: ContentTableTaiga())
+              ],
+            ),
+          )
+        else if (selectedMilestoneId == 0)
+          const Expanded(child: IssuesTableTaiga()),
         const CheckoutAddToTodo(),
       ],
     );

@@ -1,13 +1,17 @@
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:pomodoro_land/model/pagination.dart';
 import 'package:pomodoro_land/model/taiga/body/login_taiga_body.dart';
+import 'package:pomodoro_land/model/taiga/response/filter_issue_response.dart';
+import 'package:pomodoro_land/model/taiga/response/issue_response.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/milestone_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/task_detail_response.dart';
 import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
+import 'package:pomodoro_land/model/tuple.dart';
 import 'package:pomodoro_land/storage/taiga_storage.dart';
 
 abstract class ServiceTaiga {
@@ -145,5 +149,43 @@ abstract class ServiceTaiga {
       return false;
     }
     return true;
+  }
+
+  static Future<FilterIssueResponse> filterIssue(
+      String token, int projectId) async {
+    final response = await http.get(
+      taigaUrl('/issues/filters_data?project=$projectId'),
+      headers: getHeaders(token),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+          jsonDecode(response.body)['detail'] ?? 'Filter issue not found');
+    }
+    final filterIssue = FilterIssueResponse.fromJson(response.body);
+    await TaigaStorage().writeFilterIssue(projectId, filterIssue);
+    return filterIssue;
+  }
+
+  static Future<Tuple2<Pagination, List<IssueResponse>>> issues({
+    required String token,
+    required int page,
+    required int projectId,
+  }) async {
+    final response = await http.get(
+      taigaUrl('/issues?page=$page&project=$projectId'),
+      headers: getHeaders(token),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(
+          jsonDecode(response.body)['detail'] ?? 'Issues not found');
+    }
+    final data = jsonDecode(response.body);
+    if (data is List) {
+      final issues = (data).map((e) => IssueResponse.fromMap(e)).toList();
+      final pagination = Pagination.fromMap(response.headers);
+      // await TaigaStorage().writeTasks(projectId, milestoneId, issues);
+      return Tuple2(pagination, issues);
+    }
+    throw Exception('Tasks not found');
   }
 }

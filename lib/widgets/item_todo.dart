@@ -137,7 +137,7 @@ class _ItemTodoState extends State<ItemTodo> {
       feedback: Material(
         child: Text(
           task,
-          style: const TextStyle(fontSize: 24),
+          style: const TextStyle(fontSize: 20),
         ),
       ),
       child: ListTile(
@@ -162,10 +162,10 @@ class _ItemTodoState extends State<ItemTodo> {
                 children: [
                   TextFormField(
                     initialValue: task,
-                    style: const TextStyle(fontSize: 24),
+                    style: const TextStyle(fontSize: 20),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      hintStyle: TextStyle(fontSize: 24),
+                      hintStyle: TextStyle(fontSize: 20),
                     ),
                     onChanged: (value) => setState(() {
                       task = value;
@@ -186,7 +186,7 @@ class _ItemTodoState extends State<ItemTodo> {
                   ),
                 ],
               )
-            : Text(widget.todo.task, style: const TextStyle(fontSize: 24)),
+            : Text(widget.todo.task, style: const TextStyle(fontSize: 20)),
         subtitle: getSubtitleWidget(projects),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

@@ -6,6 +6,7 @@ class TaigaState {
     required this.loadingProjectDetail,
     required this.loadingMilestone,
     required this.loadingTask,
+    required this.loadingFilterIssue,
     required this.loadingContent,
     required this.projects,
     this.selectedProject,
@@ -22,12 +23,15 @@ class TaigaState {
     required this.todos,
     required this.projectsClockify,
     this.selectedProjectClockify,
+    this.filterIssue,
+    required this.selectedFilterIssue,
   });
 
   final bool loadingGlobal;
   final bool loadingProjectDetail;
   final bool loadingMilestone;
   final bool loadingTask;
+  final bool loadingFilterIssue;
   final bool loadingContent;
   final List<ProjectTaigaResponse> projects;
   final ProjectTaigaResponse? selectedProject;
@@ -44,6 +48,8 @@ class TaigaState {
   final List<Todo> todos;
   final List<ProjectClockify> projectsClockify;
   final ProjectClockify? selectedProjectClockify;
+  final FilterIssueResponse? filterIssue;
+  final FilterIssueResponse selectedFilterIssue;
 
   TaigaState setFilterAssign({
     MembersProjectDetailTaiga? filterAssign,
@@ -53,6 +59,7 @@ class TaigaState {
       loadingProjectDetail: loadingProjectDetail,
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
+      loadingFilterIssue: loadingFilterIssue,
       loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
@@ -69,6 +76,8 @@ class TaigaState {
       todos: todos,
       projectsClockify: projectsClockify,
       selectedProjectClockify: selectedProjectClockify,
+      filterIssue: filterIssue,
+      selectedFilterIssue: selectedFilterIssue,
     );
   }
 
@@ -79,6 +88,7 @@ class TaigaState {
       loadingProjectDetail: loadingProjectDetail,
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
+      loadingFilterIssue: loadingFilterIssue,
       loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
@@ -95,6 +105,8 @@ class TaigaState {
       todos: todos,
       projectsClockify: projectsClockify,
       selectedProjectClockify: selectedProjectClockify,
+      filterIssue: filterIssue,
+      selectedFilterIssue: selectedFilterIssue,
     );
   }
 
@@ -106,6 +118,7 @@ class TaigaState {
       loadingProjectDetail: loadingProjectDetail,
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
+      loadingFilterIssue: loadingFilterIssue,
       loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
@@ -122,6 +135,8 @@ class TaigaState {
       todos: todos,
       projectsClockify: projectsClockify,
       selectedProjectClockify: selectedProjectClockify,
+      filterIssue: filterIssue,
+      selectedFilterIssue: selectedFilterIssue,
     );
   }
 
@@ -130,6 +145,7 @@ class TaigaState {
     bool? loadingProjectDetail,
     bool? loadingMilestone,
     bool? loadingTask,
+    bool? loadingFilterIssue,
     bool? loadingContent,
     List<ProjectTaigaResponse>? projects,
     ProjectTaigaResponse? selectedProject,
@@ -143,12 +159,15 @@ class TaigaState {
     List<GroupUserStoryWithTask>? userStoryWithTask,
     List<Todo>? todos,
     List<ProjectClockify>? projectsClockify,
+    FilterIssueResponse? filterIssue,
+    FilterIssueResponse? selectedFilterIssue,
   }) {
     return TaigaState(
       loadingGlobal: loadingGlobal ?? this.loadingGlobal,
       loadingProjectDetail: loadingProjectDetail ?? this.loadingProjectDetail,
       loadingMilestone: loadingMilestone ?? this.loadingMilestone,
       loadingTask: loadingTask ?? this.loadingTask,
+      loadingFilterIssue: loadingFilterIssue ?? this.loadingFilterIssue,
       loadingContent: loadingContent ?? this.loadingContent,
       projects: projects ?? this.projects,
       selectedProject: selectedProject ?? this.selectedProject,
@@ -165,6 +184,8 @@ class TaigaState {
       todos: todos ?? this.todos,
       projectsClockify: projectsClockify ?? this.projectsClockify,
       selectedProjectClockify: selectedProjectClockify,
+      filterIssue: filterIssue ?? this.filterIssue,
+      selectedFilterIssue: selectedFilterIssue ?? this.selectedFilterIssue,
     );
   }
 
@@ -177,6 +198,7 @@ class TaigaState {
         other.loadingProjectDetail == loadingProjectDetail &&
         other.loadingMilestone == loadingMilestone &&
         other.loadingTask == loadingTask &&
+        other.loadingFilterIssue == loadingFilterIssue &&
         other.loadingContent == loadingContent &&
         listEquals(other.projects, projects) &&
         other.selectedProject == selectedProject &&
@@ -192,7 +214,9 @@ class TaigaState {
         listEquals(other.userStoryWithTask, userStoryWithTask) &&
         listEquals(other.todos, todos) &&
         listEquals(other.projectsClockify, projectsClockify) &&
-        other.selectedProjectClockify == selectedProjectClockify;
+        other.selectedProjectClockify == selectedProjectClockify &&
+        other.filterIssue == filterIssue &&
+        other.selectedFilterIssue == selectedFilterIssue;
   }
 
   @override
@@ -201,6 +225,7 @@ class TaigaState {
         loadingProjectDetail.hashCode ^
         loadingMilestone.hashCode ^
         loadingTask.hashCode ^
+        loadingFilterIssue.hashCode ^
         loadingContent.hashCode ^
         projects.hashCode ^
         selectedProject.hashCode ^
@@ -216,6 +241,8 @@ class TaigaState {
         userStoryWithTask.hashCode ^
         todos.hashCode ^
         projectsClockify.hashCode ^
-        selectedProjectClockify.hashCode;
+        selectedProjectClockify.hashCode ^
+        filterIssue.hashCode ^
+        selectedFilterIssue.hashCode;
   }
 }

@@ -37,7 +37,7 @@ class ContentTableTaiga extends StatelessWidget {
                         .read<TaigaCubit>()
                         .onUserStoryPressed(context, grouping.userStory),
                     child: SizedBox(
-                      width: 300,
+                      width: 200,
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Row(
@@ -104,6 +104,8 @@ class ContentTableTaiga extends StatelessWidget {
                                       .read<TaigaCubit>()
                                       .onTaskPressed(context, e),
                                   child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '#${e.ref}',

@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pomodoro_land/model/taiga/response/filter_issue_response.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/milestone_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
@@ -29,6 +30,7 @@ class TaigaCubit extends Cubit<TaigaState> {
           loadingProjectDetail: false,
           loadingMilestone: false,
           loadingTask: false,
+          loadingFilterIssue: false,
           loadingContent: false,
           projects: [],
           tasks: [],
@@ -39,6 +41,7 @@ class TaigaCubit extends Cubit<TaigaState> {
           userStoryWithTask: [],
           todos: [],
           projectsClockify: [],
+          selectedFilterIssue: FilterIssueResponse.fromMap({}),
         ));
 
   LoginTaigaResponse? loginTaiga;
@@ -140,9 +143,47 @@ class TaigaCubit extends Cubit<TaigaState> {
   void onIssuePressed(
     BuildContext context,
     ProjectDetailTaigaResponse projectDetail,
-  ) {
-    emit(state.copyWith(selectedMilestoneId: 0));
-    // TODO: handle fetch issue
+  ) async {
+    final selectedFilterIssue = await TaigaStorage().readSelectedFilterIssue(
+      projectDetail.id ?? 0,
+    );
+    emit(state.copyWith(
+      selectedMilestoneId: 0,
+      loadingContent: true,
+      selectedFilterIssue: selectedFilterIssue,
+    ));
+    await fetchFilterIssue(
+      context,
+      loginTaiga?.authToken ?? '',
+      projectDetail.id ?? 0,
+    );
+    emit(state.copyWith(loadingContent: false));
+  }
+
+  Future<void> fetchFilterIssue(
+    BuildContext context,
+    String token,
+    int projectId,
+  ) async {
+    if (state.loadingFilterIssue) return;
+    emit(state.copyWith(loadingFilterIssue: true));
+    final cached = await TaigaStorage().readFilterIssue(projectId);
+    emit(state.copyWith(loadingFilterIssue: false, filterIssue: cached));
+    try {
+      final filterIssue = await ServiceTaiga.filterIssue(token, projectId);
+      emit(state.copyWith(filterIssue: filterIssue));
+    } catch (e) {
+      context.showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red[100],
+          content: Text(
+            e.toString(),
+            style: TextStyle(fontSize: 20, color: Colors.red[700]),
+          ),
+        ),
+      );
+    }
+    emit(state.copyWith(loadingFilterIssue: false));
   }
 
   void onMilestonePressed(
@@ -358,11 +399,11 @@ class TaigaCubit extends Cubit<TaigaState> {
     BuildContext context,
     UserStoriesMilestone? userStory,
   ) async {
-    if (state.projectDetail == null &&
-        userStory == null &&
+    if (state.projectDetail == null ||
+        userStory == null ||
         state.selectedMilestoneId <= 0) return;
     await launchUrlString(
-      'https://taiga.gits.id/project/${state.projectDetail?.slug}/us/${userStory?.ref}?milestone=${state.selectedMilestoneId}',
+      'https://taiga.gits.id/project/${state.projectDetail?.slug}/us/${userStory.ref}?milestone=${state.selectedMilestoneId}',
     );
   }
 
@@ -435,5 +476,119 @@ Some other user inside Taiga has changed this before and your changes can’t be
       }
     }
     emit(state.copyWith(loadingContent: false));
+  }
+
+  void onFilterIssueTypeSelected(TypesFilterIssue value) {
+    final data =
+        List<TypesFilterIssue>.from(state.selectedFilterIssue.types ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(types: data),
+    ));
+  }
+
+  void onFilterIssueSeveritySelected(SeveritiesFilterIssue value) {
+    final data = List<SeveritiesFilterIssue>.from(
+        state.selectedFilterIssue.severities ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(severities: data),
+    ));
+  }
+
+  onFilterIssuePrioritySelected(PrioritiesFilterIssue value) {
+    final data = List<PrioritiesFilterIssue>.from(
+        state.selectedFilterIssue.priorities ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(priorities: data),
+    ));
+  }
+
+  onFilterIssueStatusSelected(StatusesFilterIssue value) {
+    final data = List<StatusesFilterIssue>.from(
+        state.selectedFilterIssue.statuses ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(statuses: data),
+    ));
+  }
+
+  void onFilterIssueTagSelected(TagsFilterIssue value) {
+    final data =
+        List<TagsFilterIssue>.from(state.selectedFilterIssue.tags ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(tags: data),
+    ));
+  }
+
+  void onFilterIssueAssignToSelected(AssignedToFilterIssue value) {
+    final data = List<AssignedToFilterIssue>.from(
+        state.selectedFilterIssue.assignedTo ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(assignedTo: data),
+    ));
+  }
+
+  void onFilterIssueRoleSelected(RolesFilterIssue value) {
+    final data =
+        List<RolesFilterIssue>.from(state.selectedFilterIssue.roles ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(roles: data),
+    ));
+  }
+
+  void onFilterIssueOwnerSelected(OwnersFilterIssue value) {
+    final data =
+        List<OwnersFilterIssue>.from(state.selectedFilterIssue.owners ?? []);
+    if (data.firstWhereOrNull((element) => element == value) == null) {
+      data.add(value);
+    } else {
+      data.remove(value);
+    }
+    emit(state.copyWith(
+      selectedFilterIssue: state.selectedFilterIssue.copyWith(owners: data),
+    ));
+  }
+
+  void onClearFilterIssuePressed(BuildContext context) => emit(
+      state.copyWith(selectedFilterIssue: FilterIssueResponse.fromMap({})));
+
+  void onApplyFilterIssuePressed(BuildContext context) async {
+    await TaigaStorage().writeSelectedFilterIssue(
+      state.projectDetail?.id ?? 0,
+      state.selectedFilterIssue,
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:pomodoro_land/model/taiga/response/filter_issue_response.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/milestone_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
@@ -71,5 +72,23 @@ class TaigaStorage {
     if (data == null) return [];
     final decode = jsonDecode(data);
     return (decode as List).map((e) => TasksResponse.fromMap(e)).toList();
+  }
+
+  Future<void> writeFilterIssue(
+          int projectId, FilterIssueResponse filterIssue) =>
+      storage.write('filter_issue_$projectId', filterIssue.toJson());
+  Future<FilterIssueResponse?> readFilterIssue(int projectId) async {
+    final data = await storage.read('filter_issue_$projectId');
+    if (data == null) return null;
+    return FilterIssueResponse.fromJson(data);
+  }
+
+  Future<void> writeSelectedFilterIssue(
+          int projectId, FilterIssueResponse filterIssue) =>
+      storage.write('selected_filter_issue_$projectId', filterIssue.toJson());
+  Future<FilterIssueResponse?> readSelectedFilterIssue(int projectId) async {
+    final data = await storage.read('selected_filter_issue_$projectId');
+    if (data == null) return null;
+    return FilterIssueResponse.fromJson(data);
   }
 }
