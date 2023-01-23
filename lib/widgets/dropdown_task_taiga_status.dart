@@ -5,17 +5,19 @@ import 'package:pomodoro_land/utils/extension.dart';
 
 import '../constants/images.dart';
 
-class DropdownTaigaStatus extends StatelessWidget {
-  const DropdownTaigaStatus({
+class DropdownTaskTaigaStatus extends StatelessWidget {
+  const DropdownTaskTaigaStatus({
     Key? key,
     required this.selectedTaigaStatusId,
     required this.onTaigaStatus,
     required this.items,
+    this.fontSize = 20,
   }) : super(key: key);
 
   final int? selectedTaigaStatusId;
   final ValueChanged<TaskStatusesProjectDetailTaiga?> onTaigaStatus;
   final List<TaskStatusesProjectDetailTaiga> items;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,8 @@ class DropdownTaigaStatus extends StatelessWidget {
                   value: e.id,
                   child: Text(
                     e.name ?? '',
-                    style: TextStyle(fontSize: 20, color: e.color?.toColor()),
+                    style: TextStyle(
+                        fontSize: fontSize, color: e.color?.toColor()),
                   ),
                 ),
               ),

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../constants/images.dart';
-import '../../../cubit/taiga/taiga_cubit.dart';
-import '../../button.dart';
-import '../../ink_well_pressed.dart';
+import '../../../../constants/images.dart';
+import '../../../../cubit/taiga/taiga_cubit.dart';
+import '../../../button.dart';
+import '../../../ink_well_pressed.dart';
 
-class CheckoutAddToTodo extends StatelessWidget {
-  const CheckoutAddToTodo({super.key});
+class CheckoutAddTaskToTodo extends StatelessWidget {
+  const CheckoutAddTaskToTodo({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class CheckoutAddToTodo extends StatelessWidget {
               ),
               const SizedBox(width: 16),
               InkWellPressed(
-                onPressed: () => context.read<TaigaCubit>().onClearTaskTodo(),
+                onPressed: () => context.read<TaigaCubit>().onClearTodo(),
                 child: const Text(
                   'Cancel',
                   style: TextStyle(fontSize: 20, color: Colors.white),

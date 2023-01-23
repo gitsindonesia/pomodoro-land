@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../constants/images.dart';
-import '../../../cubit/taiga/taiga_cubit.dart';
-import '../../../model/taiga/response/project_detail_taiga_response.dart';
-import '../../../utils/extension.dart';
-import '../../ink_well_pressed.dart';
+import '../../../../constants/images.dart';
+import '../../../../cubit/taiga/taiga_cubit.dart';
+import '../../../../model/taiga/response/project_detail_taiga_response.dart';
+import '../../../../utils/extension.dart';
+import '../../../ink_well_pressed.dart';
 
-class HeaderTableTaiga extends StatelessWidget {
-  const HeaderTableTaiga({super.key});
+class HeaderTableTaskTaiga extends StatelessWidget {
+  const HeaderTableTaskTaiga({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class HeaderTableTaiga extends StatelessWidget {
     final filterAssign =
         context.select((TaigaCubit bloc) => bloc.state.filterAssign);
     final allChecklist =
-        context.select((TaigaCubit bloc) => bloc.state.allChecklist);
+        context.select((TaigaCubit bloc) => bloc.state.allTaskChecklist);
 
     return Column(
       children: [
@@ -55,7 +55,7 @@ class HeaderTableTaiga extends StatelessWidget {
                     const DropdownMenuItem(
                       value: null,
                       child: Text(
-                        'All',
+                        'All Status',
                         maxLines: 2,
                         style: TextStyle(fontSize: 16),
                       ),

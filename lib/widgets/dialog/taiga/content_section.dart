@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/taiga/taiga_cubit.dart';
-import 'package:pomodoro_land/widgets/dialog/taiga/content_table_taiga.dart';
-import 'package:pomodoro_land/widgets/dialog/taiga/empty_state_table_taiga.dart';
-import 'package:pomodoro_land/widgets/dialog/taiga/header_table_taiga.dart';
+import 'package:pomodoro_land/widgets/dialog/taiga/issues/content_table_issue_taiga.dart';
+import 'package:pomodoro_land/widgets/dialog/taiga/tasks/content_table_task_taiga.dart';
+import 'package:pomodoro_land/widgets/dialog/taiga/tasks/empty_state_table_task_taiga.dart';
+import 'package:pomodoro_land/widgets/dialog/taiga/tasks/header_table_task_taiga.dart';
 
 import '../../empty_state.dart';
-import 'checkout_add_to_todo.dart';
-import 'issues_table_taiga.dart';
+import 'issues/checkout_add_issue_to_todo.dart';
+import 'issues/empty_state_table_issue_taiga.dart';
+import 'issues/filter_issue_sidebar.dart';
+import 'issues/header_table_issue_taiga.dart';
+import 'tasks/checkout_add_task_to_todo.dart';
 
 class ContentSection extends StatelessWidget {
   const ContentSection({super.key});
@@ -22,6 +26,7 @@ class ContentSection extends StatelessWidget {
         context.select((TaigaCubit bloc) => bloc.state.loadingContent);
     final userStoryWithTask =
         context.select((TaigaCubit bloc) => bloc.state.userStoryWithTask);
+    final issues = context.select((TaigaCubit bloc) => bloc.state.issues);
     final filterProgress =
         context.select((TaigaCubit bloc) => bloc.state.filterProgress);
     final filterAssign =
@@ -58,19 +63,39 @@ class ContentSection extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                const HeaderTableTaiga(),
+                const HeaderTableTaskTaiga(),
                 if (userStoryWithTask
                     .where((element) => element.tasks.isNotEmpty)
                     .isEmpty)
-                  const Expanded(child: EmptyStateTableTaiga())
+                  const Expanded(child: EmptyStateTableTaskTaiga())
                 else
-                  const Expanded(child: ContentTableTaiga())
+                  const Expanded(child: ContentTableTaskTaiga())
               ],
             ),
           )
         else if (selectedMilestoneId == 0)
-          const Expanded(child: IssuesTableTaiga()),
-        const CheckoutAddToTodo(),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const FilterIssueSidebar(),
+                const VerticalDivider(width: 1),
+                Expanded(
+                  child: Column(
+                    children: [
+                      const HeaderTableIssueTaiga(),
+                      if (issues.isEmpty)
+                        const Expanded(child: EmptyStateTableIssueTaiga())
+                      else
+                        const Expanded(child: ContentTableIssueTaiga())
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        const CheckoutAddTaskToTodo(),
+        const CheckoutAddIssueToTodo(),
       ],
     );
   }

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 
-class DropdownTaigaStatus extends StatefulWidget {
-  const DropdownTaigaStatus({
+class DropdownTaskStatusTaiga extends StatefulWidget {
+  const DropdownTaskStatusTaiga({
     Key? key,
     required this.initialSelectedTaigaStatusId,
     required this.onTaigaStatus,
@@ -16,10 +16,11 @@ class DropdownTaigaStatus extends StatefulWidget {
   final List<TaskStatusesProjectDetailTaiga> items;
 
   @override
-  State<DropdownTaigaStatus> createState() => _DropdownTaigaStatusState();
+  State<DropdownTaskStatusTaiga> createState() =>
+      _DropdownTaskStatusTaigaState();
 }
 
-class _DropdownTaigaStatusState extends State<DropdownTaigaStatus> {
+class _DropdownTaskStatusTaigaState extends State<DropdownTaskStatusTaiga> {
   int? selectedTaigaStatusId;
 
   @override

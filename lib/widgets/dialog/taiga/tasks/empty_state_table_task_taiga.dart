@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../cubit/taiga/taiga_cubit.dart';
-import '../../empty_state.dart';
+import '../../../../cubit/taiga/taiga_cubit.dart';
+import '../../../empty_state.dart';
 
-class EmptyStateTableTaiga extends StatelessWidget {
-  const EmptyStateTableTaiga({super.key});
+class EmptyStateTableTaskTaiga extends StatelessWidget {
+  const EmptyStateTableTaskTaiga({super.key});
 
   @override
   Widget build(BuildContext context) {

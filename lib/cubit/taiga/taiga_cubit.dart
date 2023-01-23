@@ -4,7 +4,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:pomodoro_land/model/pagination.dart';
 import 'package:pomodoro_land/model/taiga/response/filter_issue_response.dart';
+import 'package:pomodoro_land/model/taiga/response/issue_response.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/milestone_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
@@ -36,17 +38,24 @@ class TaigaCubit extends Cubit<TaigaState> {
           tasks: [],
           selectedMilestoneId: -1,
           taskToTodo: [],
-          allChecklist: false,
+          allTaskChecklist: false,
           filteredTasks: [],
           userStoryWithTask: [],
           todos: [],
           projectsClockify: [],
           selectedFilterIssue: FilterIssueResponse.fromMap({}),
+          issues: [],
+          paginationIssues: Pagination.fromMap({}),
+          loadingIssue: false,
+          selectedPageIssue: 1,
+          issueToTodo: [],
+          allIssueChecklist: false,
         ));
 
   LoginTaigaResponse? loginTaiga;
 
   Map<int, TaskStatusesProjectDetailTaiga?> mapTaskIdWithChangedStatus = {};
+  Map<int, IssueStatusesProjectDetailTaiga?> mapIssueIdWithChangedStatus = {};
 
   void initState(BuildContext context) {}
 
@@ -108,7 +117,10 @@ class TaigaCubit extends Cubit<TaigaState> {
     ProjectTaigaResponse project,
   ) async {
     if (state.loadingProjectDetail) return;
-    emit(state.copyWith(selectedProject: project, selectedMilestoneId: -1));
+    emit(state.copyWith(
+      selectedProject: project,
+      selectedMilestoneId: -1,
+    ));
     await fetchProjectDetail(context, loginTaiga?.authToken ?? '', project);
   }
 
@@ -151,12 +163,24 @@ class TaigaCubit extends Cubit<TaigaState> {
       selectedMilestoneId: 0,
       loadingContent: true,
       selectedFilterIssue: selectedFilterIssue,
+      selectedPageIssue: 1,
+      taskToTodo: [],
+      allTaskChecklist: false,
     ));
-    await fetchFilterIssue(
-      context,
-      loginTaiga?.authToken ?? '',
-      projectDetail.id ?? 0,
-    );
+    await Future.wait([
+      fetchFilterIssue(
+        context,
+        loginTaiga?.authToken ?? '',
+        projectDetail.id ?? 0,
+      ),
+      fetchIssues(
+        context: context,
+        token: loginTaiga?.authToken ?? '',
+        page: state.selectedPageIssue,
+        projectId: projectDetail.id ?? 0,
+      ),
+    ]);
+
     emit(state.copyWith(loadingContent: false));
   }
 
@@ -168,7 +192,8 @@ class TaigaCubit extends Cubit<TaigaState> {
     if (state.loadingFilterIssue) return;
     emit(state.copyWith(loadingFilterIssue: true));
     final cached = await TaigaStorage().readFilterIssue(projectId);
-    emit(state.copyWith(loadingFilterIssue: false, filterIssue: cached));
+    emit(state.copyWith(
+        loadingFilterIssue: cached == null, filterIssue: cached));
     try {
       final filterIssue = await ServiceTaiga.filterIssue(token, projectId);
       emit(state.copyWith(filterIssue: filterIssue));
@@ -195,6 +220,8 @@ class TaigaCubit extends Cubit<TaigaState> {
     emit(state.copyWith(
       selectedMilestoneId: milestone.id,
       loadingContent: true,
+      issueToTodo: [],
+      allIssueChecklist: false,
     ));
     await Future.wait([
       fetchMilestoneCache(context, milestone.id ?? 0),
@@ -317,14 +344,15 @@ class TaigaCubit extends Cubit<TaigaState> {
   }
 
   void onChecklistAllTask() {
-    if (state.allChecklist) {
-      emit(state.copyWith(taskToTodo: [], allChecklist: false));
+    if (state.allTaskChecklist) {
+      emit(state.copyWith(taskToTodo: [], allTaskChecklist: false));
     } else {
-      emit(state.copyWith(taskToTodo: state.filteredTasks, allChecklist: true));
+      emit(state.copyWith(
+          taskToTodo: state.filteredTasks, allTaskChecklist: true));
     }
   }
 
-  void onChecklistTask(
+  void onChecklistItemTask(
       BuildContext context, TasksResponse e, bool alreadyInTodo) {
     if (alreadyInTodo) {
       context.showSnackBar(
@@ -355,6 +383,8 @@ class TaigaCubit extends Cubit<TaigaState> {
       'task_to_do': state.taskToTodo,
       'project_clockify': state.selectedProjectClockify,
       'map_task_id_with_changed_status': mapTaskIdWithChangedStatus,
+      'issue_to_do': state.issueToTodo,
+      'map_issue_id_with_changed_status': mapIssueIdWithChangedStatus,
     });
   }
 
@@ -364,11 +394,17 @@ class TaigaCubit extends Cubit<TaigaState> {
       'task_to_do': state.taskToTodo,
       'project_clockify': state.selectedProjectClockify,
       'map_task_id_with_changed_status': mapTaskIdWithChangedStatus,
+      'issue_to_do': state.issueToTodo,
+      'map_issue_id_with_changed_status': mapIssueIdWithChangedStatus,
     });
   }
 
-  void onClearTaskTodo() =>
-      emit(state.copyWith(taskToTodo: [], allChecklist: false));
+  void onClearTodo() => emit(state.copyWith(
+        taskToTodo: [],
+        issueToTodo: [],
+        allTaskChecklist: false,
+        allIssueChecklist: false,
+      ));
 
   void onFilterAssignChanged(MembersProjectDetailTaiga? value) {
     emit(state.setFilterAssign(filterAssign: value));
@@ -590,5 +626,98 @@ Some other user inside Taiga has changed this before and your changes can’t be
       state.projectDetail?.id ?? 0,
       state.selectedFilterIssue,
     );
+
+    emit(state.copyWith(loadingContent: true, selectedPageIssue: 1));
+    await fetchIssues(
+      context: context,
+      token: loginTaiga?.authToken ?? '',
+      page: state.selectedPageIssue,
+      projectId: state.projectDetail?.id ?? 0,
+    );
+    emit(state.copyWith(loadingContent: false));
+  }
+
+  Future<void> fetchIssues({
+    required BuildContext context,
+    required String token,
+    required int page,
+    required int projectId,
+  }) async {
+    if (state.loadingIssue) return;
+    emit(state.copyWith(loadingIssue: true));
+    try {
+      final issues = await ServiceTaiga.issues(
+        token: token,
+        page: page,
+        projectId: projectId,
+        filterIssue: state.selectedFilterIssue,
+      );
+      emit(
+          state.copyWith(paginationIssues: issues.item1, issues: issues.item2));
+    } catch (e) {
+      context.showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red[100],
+          content: Text(
+            e.toString(),
+            style: TextStyle(fontSize: 20, color: Colors.red[700]),
+          ),
+        ),
+      );
+    }
+    emit(state.copyWith(loadingIssue: false));
+  }
+
+  void onItemIssuePressed(BuildContext context, IssueResponse issue) async {
+    await launchUrlString(
+      'https://taiga.gits.id/project/${state.projectDetail?.slug}/issue/${issue.ref ?? 0}',
+    );
+  }
+
+  void onChecklistItemIssue(
+      BuildContext context, IssueResponse issue, bool alreadyInTodo) {
+    if (alreadyInTodo) {
+      context.showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.blue[100],
+          content: Text(
+            'This issue is already in Todo',
+            style: TextStyle(fontSize: 20, color: Colors.blue[700]),
+          ),
+        ),
+      );
+      return;
+    }
+    if (state.issueToTodo.firstWhereOrNull((element) => issue == element) ==
+        null) {
+      emit(state.copyWith(
+        issueToTodo: [...state.issueToTodo, issue],
+      ));
+    } else {
+      final issueToTodo = List<IssueResponse>.from(state.issueToTodo);
+      issueToTodo.remove(issue);
+      emit(state.copyWith(issueToTodo: issueToTodo));
+    }
+  }
+
+  void onEditIssueTaigaStatus(BuildContext context, e,
+      IssueStatusesProjectDetailTaiga? value, bool alreadyInTodo) {}
+
+  void onNumberPaginationPressed(BuildContext context, int page) {
+    emit(state.copyWith(selectedPageIssue: page));
+    fetchIssues(
+      context: context,
+      token: loginTaiga?.authToken ?? '',
+      page: page,
+      projectId: state.projectDetail?.id ?? 0,
+    );
+  }
+
+  void onChecklistAllIssue() {
+    if (state.allIssueChecklist) {
+      emit(state.copyWith(issueToTodo: [], allIssueChecklist: false));
+    } else {
+      emit(state.copyWith(issueToTodo: state.issues, allIssueChecklist: true));
+    }
   }
 }

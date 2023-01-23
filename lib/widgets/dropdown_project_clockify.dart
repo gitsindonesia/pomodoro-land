@@ -9,11 +9,13 @@ class DropdownProjectClockify extends StatelessWidget {
     required this.selectedProject,
     required this.onProjectSelected,
     required this.items,
+    this.fontSize = 20,
   }) : super(key: key);
 
   final ProjectClockify? selectedProject;
   final ValueChanged<ProjectClockify?> onProjectSelected;
   final List<ProjectClockify> items;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +31,11 @@ class DropdownProjectClockify extends StatelessWidget {
             underline: const SizedBox.shrink(),
             value: selectedProject,
             items: [
-              const DropdownMenuItem<ProjectClockify>(
+              DropdownMenuItem<ProjectClockify>(
                 value: null,
                 child: Text(
                   'Not a Project',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: fontSize),
                 ),
               ),
               ...items.map(
@@ -41,7 +43,7 @@ class DropdownProjectClockify extends StatelessWidget {
                   value: e,
                   child: Text(
                     e.name,
-                    style: TextStyle(fontSize: 20, color: e.color),
+                    style: TextStyle(fontSize: fontSize, color: e.color),
                   ),
                 ),
               ),

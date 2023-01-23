@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/model/clockify/project_clockify.dart';
 import 'package:pomodoro_land/utils/extension.dart';
-import 'package:pomodoro_land/widgets/dropdown_taiga_status.dart';
+import 'package:pomodoro_land/widgets/dropdown_task_taiga_status.dart';
 import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../constants/images.dart';
 import '../cubit/main/main_cubit.dart';
 import '../model/todo.dart';
+import 'dropdown_issue_taiga_status.dart';
 import 'dropdown_project_clockify.dart';
 
 class ItemTodo extends StatefulWidget {
@@ -28,14 +29,16 @@ class _ItemTodoState extends State<ItemTodo> {
   bool isEdit = false;
   String task = '';
   ProjectClockify? selectedProject;
-  int? selectedTaigaStatusId;
+  int? selectedTaskTaigaStatusId;
+  int? selectedIssueTaigaStatusId;
 
   @override
   void initState() {
     super.initState();
     task = widget.todo.task;
     selectedProject = widget.todo.project;
-    selectedTaigaStatusId = widget.todo.taiga?.taskTaiga.status;
+    selectedTaskTaigaStatusId = widget.todo.taiga?.taskTaiga?.status;
+    selectedIssueTaigaStatusId = widget.todo.taiga?.issueTaiga?.status;
   }
 
   @override
@@ -45,7 +48,8 @@ class _ItemTodoState extends State<ItemTodo> {
       setState(() {
         task = widget.todo.task;
         selectedProject = widget.todo.project;
-        selectedTaigaStatusId = widget.todo.taiga?.taskTaiga.status;
+        selectedTaskTaigaStatusId = widget.todo.taiga?.taskTaiga?.status;
+        selectedIssueTaigaStatusId = widget.todo.taiga?.issueTaiga?.status;
       });
     }
   }
@@ -56,29 +60,63 @@ class _ItemTodoState extends State<ItemTodo> {
     final taiga = widget.todo.taiga;
 
     Widget? taigaWidget;
-    if (isEdit && taiga != null) {
-      taigaWidget = DropdownTaigaStatus(
+    if (isEdit && taiga != null && taiga.taskTaiga != null) {
+      taigaWidget = DropdownTaskTaigaStatus(
           items: taiga.projectDetail.taskStatuses ?? [],
-          selectedTaigaStatusId: selectedTaigaStatusId,
+          selectedTaigaStatusId: selectedTaskTaigaStatusId,
+          fontSize: 14,
           onTaigaStatus: (value) {
             setState(() {
-              selectedTaigaStatusId = value?.id;
+              selectedTaskTaigaStatusId = value?.id;
             });
             context
                 .read<MainCubit>()
-                .onEditTaigaStatusTodo(context, widget.todo, value);
+                .onEditTaskTaigaStatusTodo(context, widget.todo, value);
           });
-    } else if (taiga != null) {
+    } else if (isEdit && taiga != null && taiga.issueTaiga != null) {
+      taigaWidget = DropdownIssueTaigaStatus(
+          items: taiga.projectDetail.issueStatuses ?? [],
+          selectedTaigaStatusId: selectedIssueTaigaStatusId,
+          fontSize: 14,
+          onTaigaStatus: (value) {
+            setState(() {
+              selectedTaskTaigaStatusId = value?.id;
+            });
+            context
+                .read<MainCubit>()
+                .onEditIssueTaigaStatusTodo(context, widget.todo, value);
+          });
+    } else if (taiga != null && taiga.taskTaiga != null) {
       taigaWidget = Row(
         children: [
+          const Text('Task: '),
+          const SizedBox(width: 8),
           Image.asset(Images.taiga, width: 24, height: 24),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              taiga.taskTaiga.statusExtraInfo?.name ?? '',
+              taiga.taskTaiga?.statusExtraInfo?.name ?? '',
               style: TextStyle(
                 fontSize: 14,
-                color: taiga.taskTaiga.statusExtraInfo?.color?.toColor(),
+                color: taiga.taskTaiga?.statusExtraInfo?.color?.toColor(),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (taiga != null && taiga.issueTaiga != null) {
+      taigaWidget = Row(
+        children: [
+          const Text('Issue: '),
+          const SizedBox(width: 8),
+          Image.asset(Images.taiga, width: 24, height: 24),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              taiga.issueTaiga?.statusExtraInfo?.name ?? '',
+              style: TextStyle(
+                fontSize: 14,
+                color: taiga.issueTaiga?.statusExtraInfo?.color?.toColor(),
               ),
             ),
           ),
@@ -91,6 +129,7 @@ class _ItemTodoState extends State<ItemTodo> {
       projectWidget = DropdownProjectClockify(
           items: projects,
           selectedProject: selectedProject,
+          fontSize: 14,
           onProjectSelected: (value) {
             setState(() {
               selectedProject = value;

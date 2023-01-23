@@ -170,9 +170,38 @@ abstract class ServiceTaiga {
     required String token,
     required int page,
     required int projectId,
+    required FilterIssueResponse filterIssue,
   }) async {
+    final type = filterIssue.types?.isEmpty ?? true
+        ? ''
+        : '&type=${filterIssue.types?.map((e) => e.id).join() ?? ''}';
+    final severity = filterIssue.severities?.isEmpty ?? true
+        ? ''
+        : '&severity=${filterIssue.severities?.map((e) => e.id).join() ?? ''}';
+    final priority = filterIssue.priorities?.isEmpty ?? true
+        ? ''
+        : '&priority=${filterIssue.priorities?.map((e) => e.id).join() ?? ''}';
+    final status = filterIssue.statuses?.isEmpty ?? true
+        ? ''
+        : '&status=${filterIssue.statuses?.map((e) => e.id).join() ?? ''}';
+    final tag = filterIssue.tags?.isEmpty ?? true
+        ? ''
+        : '&tag=${filterIssue.tags?.map((e) => e.name).join() ?? ''}';
+    final assignedTo = filterIssue.assignedTo?.isEmpty ?? true
+        ? ''
+        : '&assigned_to=${filterIssue.assignedTo?.map((e) => e.id).join() ?? ''}';
+    final role = filterIssue.roles?.isEmpty ?? true
+        ? ''
+        : '&role=${filterIssue.roles?.map((e) => e.id).join() ?? ''}';
+    final owner = filterIssue.owners?.isEmpty ?? true
+        ? ''
+        : '&owner=${filterIssue.owners?.map((e) => e.id).join() ?? ''}';
+
+    final url = taigaUrl(
+        '/issues?page=$page&project=$projectId$type$severity$priority$status$tag$assignedTo$role$owner');
+
     final response = await http.get(
-      taigaUrl('/issues?page=$page&project=$projectId'),
+      url,
       headers: getHeaders(token),
     );
     if (response.statusCode != 200) {
@@ -183,7 +212,6 @@ abstract class ServiceTaiga {
     if (data is List) {
       final issues = (data).map((e) => IssueResponse.fromMap(e)).toList();
       final pagination = Pagination.fromMap(response.headers);
-      // await TaigaStorage().writeTasks(projectId, milestoneId, issues);
       return Tuple2(pagination, issues);
     }
     throw Exception('Tasks not found');

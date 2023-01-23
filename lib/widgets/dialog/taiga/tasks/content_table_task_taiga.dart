@@ -3,13 +3,13 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../constants/images.dart';
-import '../../../cubit/taiga/taiga_cubit.dart';
-import '../../ink_well_pressed.dart';
-import 'dropdown_taiga_status.dart';
+import '../../../../constants/images.dart';
+import '../../../../cubit/taiga/taiga_cubit.dart';
+import '../../../ink_well_pressed.dart';
+import 'dropdown_task_status_taiga.dart';
 
-class ContentTableTaiga extends StatelessWidget {
-  const ContentTableTaiga({super.key});
+class ContentTableTaskTaiga extends StatelessWidget {
+  const ContentTableTaskTaiga({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +75,7 @@ class ContentTableTaiga extends StatelessWidget {
                       children: grouping.tasks.map((e) {
                         final alreadyInTodo = todos.firstWhereOrNull(
                                 (element) =>
-                                    element.taiga?.taskTaiga.id == e.id) !=
+                                    element.taiga?.taskTaiga?.id == e.id) !=
                             null;
 
                         final selected = taskToTodo.firstWhereOrNull(
@@ -128,7 +128,7 @@ class ContentTableTaiga extends StatelessWidget {
                               const SizedBox(width: 32),
                               SizedBox(
                                 width: 150,
-                                child: DropdownTaigaStatus(
+                                child: DropdownTaskStatusTaiga(
                                   items: projectDetail?.taskStatuses ?? [],
                                   initialSelectedTaigaStatusId: e.status,
                                   onTaigaStatus: (value) => context
@@ -177,7 +177,8 @@ class ContentTableTaiga extends StatelessWidget {
                               InkWellPressed(
                                 onPressed: () => context
                                     .read<TaigaCubit>()
-                                    .onChecklistTask(context, e, alreadyInTodo),
+                                    .onChecklistItemTask(
+                                        context, e, alreadyInTodo),
                                 child: SizedBox(
                                   width: 24,
                                   height: 24,

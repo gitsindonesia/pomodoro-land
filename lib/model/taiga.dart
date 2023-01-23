@@ -1,27 +1,36 @@
 import 'dart:convert';
 
+import 'package:pomodoro_land/model/taiga/response/issue_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 
 class Taiga {
   Taiga({
     required this.projectDetail,
-    required this.taskTaiga,
+    this.taskTaiga,
+    this.issueTaiga,
   });
   final ProjectDetailTaigaResponse projectDetail;
-  final TasksResponse taskTaiga;
+  final TasksResponse? taskTaiga;
+  final IssueResponse? issueTaiga;
 
   Map<String, dynamic> toMap() {
     return {
       'project_detail': projectDetail.toMap(),
-      'task_taiga': taskTaiga.toMap(),
+      'task_taiga': taskTaiga?.toMap(),
+      'issue_taiga': issueTaiga?.toMap(),
     };
   }
 
   factory Taiga.fromMap(Map<String, dynamic> map) {
     return Taiga(
       projectDetail: ProjectDetailTaigaResponse.fromMap(map['project_detail']),
-      taskTaiga: TasksResponse.fromMap(map['task_taiga']),
+      taskTaiga: map['task_taiga'] != null
+          ? TasksResponse.fromMap(map['task_taiga'])
+          : null,
+      issueTaiga: map['issue_taiga'] != null
+          ? IssueResponse.fromMap(map['issue_taiga'])
+          : null,
     );
   }
 
@@ -35,19 +44,23 @@ class Taiga {
 
     return other is Taiga &&
         other.projectDetail == projectDetail &&
-        other.taskTaiga == taskTaiga;
+        other.taskTaiga == taskTaiga &&
+        other.issueTaiga == issueTaiga;
   }
 
   @override
-  int get hashCode => projectDetail.hashCode ^ taskTaiga.hashCode;
+  int get hashCode =>
+      projectDetail.hashCode ^ taskTaiga.hashCode ^ issueTaiga.hashCode;
 
   Taiga copyWith({
     ProjectDetailTaigaResponse? projectDetail,
     TasksResponse? taskTaiga,
+    IssueResponse? issueTaiga,
   }) {
     return Taiga(
       projectDetail: projectDetail ?? this.projectDetail,
       taskTaiga: taskTaiga ?? this.taskTaiga,
+      issueTaiga: issueTaiga ?? this.issueTaiga,
     );
   }
 }

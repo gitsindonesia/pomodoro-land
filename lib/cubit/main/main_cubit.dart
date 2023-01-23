@@ -9,6 +9,7 @@ import 'package:pomodoro_land/constants/sounds.dart';
 import 'package:pomodoro_land/model/clockify/project_clockify.dart';
 import 'package:pomodoro_land/model/clockify/workspace_clockify.dart';
 import 'package:pomodoro_land/model/taiga.dart';
+import 'package:pomodoro_land/model/taiga/response/issue_response.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/project_detail_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
@@ -122,20 +123,21 @@ class MainCubit extends Cubit<MainState> {
   Future<void> setupTaigaStatus() async {
     emit(state.copyWith(loadingGlobal: true));
     for (var todo in state.todos) {
-      if (todo.taiga == null) return;
-      final taskDetail = await ServiceTaiga.taskDetail(
-        loginTaiga?.authToken ?? '',
-        projectId: todo.taiga?.projectDetail.id ?? 0,
-        milestoneId: todo.taiga?.taskTaiga.milestone ?? 0,
-        ref: todo.taiga?.taskTaiga.ref ?? 0,
-      );
-      updateTodoTaskStatus(
-        todo: todo,
-        stasusId: taskDetail.status,
-        stasusName: taskDetail.statusExtraInfo?.name,
-        stasusColor: taskDetail.statusExtraInfo?.color,
-        stasusIsClosed: taskDetail.statusExtraInfo?.isClosed,
-      );
+      if (todo.taiga?.taskTaiga != null) {
+        final taskDetail = await ServiceTaiga.taskDetail(
+          loginTaiga?.authToken ?? '',
+          projectId: todo.taiga?.projectDetail.id ?? 0,
+          milestoneId: todo.taiga?.taskTaiga?.milestone ?? 0,
+          ref: todo.taiga?.taskTaiga?.ref ?? 0,
+        );
+        updateTodoTaskStatus(
+          todo: todo,
+          stasusId: taskDetail.status,
+          stasusName: taskDetail.statusExtraInfo?.name,
+          stasusColor: taskDetail.statusExtraInfo?.color,
+          stasusIsClosed: taskDetail.statusExtraInfo?.isClosed,
+        );
+      }
     }
     emit(state.copyWith(loadingGlobal: false));
   }
@@ -446,11 +448,15 @@ class MainCubit extends Cubit<MainState> {
         final ProjectDetailTaigaResponse? projectDetail =
             result['project_detail'];
         final List<TasksResponse> tasks = result['task_to_do'];
+        final List<IssueResponse> issues = result['issue_to_do'];
         final ProjectClockify? project = result['project_clockify'];
         final Map<int, TaskStatusesProjectDetailTaiga?>
             mapTaskIdWithChangedStatus =
             result['map_task_id_with_changed_status'];
-        final newTodos = tasks
+        final Map<int, IssueStatusesProjectDetailTaiga?>
+            mapIssueIdWithChangedStatus =
+            result['map_issue_id_with_changed_status'];
+        final newTaskTodos = tasks
             .map((e) => Todo(
                   checklist: false,
                   task: '#${e.ref} ${e.subject}',
@@ -461,30 +467,65 @@ class MainCubit extends Cubit<MainState> {
                   project: project,
                 ))
             .toList();
-        final todos = [...state.todos, ...newTodos];
-        emit(state.copyWith(
-          todos: [...state.todos, ...newTodos],
-        ));
+        final newIssueTodos = issues
+            .map((e) => Todo(
+                  checklist: false,
+                  task: '#${e.ref} ${e.subject}',
+                  dateTime: DateTime.now(),
+                  taiga: projectDetail == null
+                      ? null
+                      : Taiga(projectDetail: projectDetail, issueTaiga: e),
+                  project: project,
+                ))
+            .toList();
+        final todos = [...state.todos, ...newTaskTodos, ...newIssueTodos];
+        emit(state.copyWith(todos: todos));
         emit(state.setSelectedProject(project));
         writeCacheTodo();
 
-        final todoWithTaiga =
-            todos.where((element) => element.taiga != null).toList();
-        for (var todo in todoWithTaiga) {
-          final value =
-              mapTaskIdWithChangedStatus[todo.taiga?.taskTaiga.id ?? -1];
-          if (value != null) {
+        final todoWithTaigaTask =
+            todos.where((element) => element.taiga?.taskTaiga != null).toList();
+        for (var todo in todoWithTaigaTask) {
+          final valueTask =
+              mapTaskIdWithChangedStatus[todo.taiga?.taskTaiga?.id ?? -1];
+          if (valueTask != null) {
             updateTodo(
               todo,
               todo.copyWith(
                 taiga: todo.taiga?.copyWith(
-                  taskTaiga: todo.taiga?.taskTaiga.copyWith(
-                    status: value.id,
+                  taskTaiga: todo.taiga?.taskTaiga?.copyWith(
+                    status: valueTask.id,
                     statusExtraInfo:
-                        todo.taiga?.taskTaiga.statusExtraInfo?.copyWith(
-                      name: value.name,
-                      color: value.color,
-                      isClosed: value.isClosed,
+                        todo.taiga?.taskTaiga?.statusExtraInfo?.copyWith(
+                      name: valueTask.name,
+                      color: valueTask.color,
+                      isClosed: valueTask.isClosed,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        }
+
+        final todoWithTaigaIssue = todos
+            .where((element) => element.taiga?.issueTaiga != null)
+            .toList();
+        for (var todo in todoWithTaigaIssue) {
+          final valueIssue =
+              mapIssueIdWithChangedStatus[todo.taiga?.issueTaiga?.id ?? -1];
+          if (valueIssue != null) {
+            updateTodo(
+              todo,
+              todo.copyWith(
+                taiga: todo.taiga?.copyWith(
+                  issueTaiga: todo.taiga?.issueTaiga?.copyWith(
+                    status: valueIssue.id,
+                    statusExtraInfo:
+                        todo.taiga?.issueTaiga?.statusExtraInfo?.copyWith(
+                      name: valueIssue.name,
+                      color: valueIssue.color,
+                      isClosed: valueIssue.isClosed,
                     ),
                   ),
                 ),
@@ -520,7 +561,7 @@ class MainCubit extends Cubit<MainState> {
     addOrUpdateHistory(todos);
   }
 
-  void onEditTaigaStatusTodo(
+  void onEditTaskTaigaStatusTodo(
     BuildContext context,
     Todo todo,
     TaskStatusesProjectDetailTaiga? value,
@@ -530,8 +571,8 @@ class MainCubit extends Cubit<MainState> {
       final taskDetail = await ServiceTaiga.taskDetail(
         loginTaiga!.authToken ?? '',
         projectId: todo.taiga?.projectDetail.id ?? 0,
-        milestoneId: todo.taiga?.taskTaiga.milestone ?? 0,
-        ref: todo.taiga?.taskTaiga.ref ?? 0,
+        milestoneId: todo.taiga?.taskTaiga?.milestone ?? 0,
+        ref: todo.taiga?.taskTaiga?.ref ?? 0,
       );
 
       final success = await ServiceTaiga.changeTaskStatus(
@@ -577,9 +618,9 @@ Some other user inside Taiga has changed this before and your changes can’t be
       todo,
       todo.copyWith(
         taiga: todo.taiga?.copyWith(
-          taskTaiga: todo.taiga?.taskTaiga.copyWith(
+          taskTaiga: todo.taiga?.taskTaiga?.copyWith(
             status: stasusId,
-            statusExtraInfo: todo.taiga?.taskTaiga.statusExtraInfo?.copyWith(
+            statusExtraInfo: todo.taiga?.taskTaiga?.statusExtraInfo?.copyWith(
               name: stasusName,
               color: stasusColor,
               isClosed: stasusIsClosed,
@@ -589,4 +630,7 @@ Some other user inside Taiga has changed this before and your changes can’t be
       ),
     );
   }
+
+  void onEditIssueTaigaStatusTodo(BuildContext context, Todo todo,
+      IssueStatusesProjectDetailTaiga? value) {}
 }

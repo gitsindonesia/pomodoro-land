@@ -7,6 +7,7 @@ class TaigaState {
     required this.loadingMilestone,
     required this.loadingTask,
     required this.loadingFilterIssue,
+    required this.loadingIssue,
     required this.loadingContent,
     required this.projects,
     this.selectedProject,
@@ -15,7 +16,7 @@ class TaigaState {
     required this.filteredTasks,
     required this.selectedMilestoneId,
     required this.taskToTodo,
-    required this.allChecklist,
+    required this.allTaskChecklist,
     this.filterAssign,
     this.filterProgress,
     this.milestone,
@@ -25,6 +26,11 @@ class TaigaState {
     this.selectedProjectClockify,
     this.filterIssue,
     required this.selectedFilterIssue,
+    required this.issues,
+    required this.paginationIssues,
+    required this.selectedPageIssue,
+    required this.issueToTodo,
+    required this.allIssueChecklist,
   });
 
   final bool loadingGlobal;
@@ -32,6 +38,7 @@ class TaigaState {
   final bool loadingMilestone;
   final bool loadingTask;
   final bool loadingFilterIssue;
+  final bool loadingIssue;
   final bool loadingContent;
   final List<ProjectTaigaResponse> projects;
   final ProjectTaigaResponse? selectedProject;
@@ -40,7 +47,7 @@ class TaigaState {
   final List<TasksResponse> filteredTasks;
   final int selectedMilestoneId;
   final List<TasksResponse> taskToTodo;
-  final bool allChecklist;
+  final bool allTaskChecklist;
   final MembersProjectDetailTaiga? filterAssign;
   final TaskStatusesProjectDetailTaiga? filterProgress;
   final MilestoneResponse? milestone;
@@ -50,6 +57,11 @@ class TaigaState {
   final ProjectClockify? selectedProjectClockify;
   final FilterIssueResponse? filterIssue;
   final FilterIssueResponse selectedFilterIssue;
+  final List<IssueResponse> issues;
+  final Pagination paginationIssues;
+  final int selectedPageIssue;
+  final List<IssueResponse> issueToTodo;
+  final bool allIssueChecklist;
 
   TaigaState setFilterAssign({
     MembersProjectDetailTaiga? filterAssign,
@@ -60,6 +72,7 @@ class TaigaState {
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
       loadingFilterIssue: loadingFilterIssue,
+      loadingIssue: loadingIssue,
       loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
@@ -67,7 +80,7 @@ class TaigaState {
       tasks: tasks,
       selectedMilestoneId: selectedMilestoneId,
       taskToTodo: taskToTodo,
-      allChecklist: allChecklist,
+      allTaskChecklist: allTaskChecklist,
       filterAssign: filterAssign,
       filterProgress: filterProgress,
       filteredTasks: filteredTasks,
@@ -78,6 +91,11 @@ class TaigaState {
       selectedProjectClockify: selectedProjectClockify,
       filterIssue: filterIssue,
       selectedFilterIssue: selectedFilterIssue,
+      issues: issues,
+      paginationIssues: paginationIssues,
+      selectedPageIssue: selectedPageIssue,
+      issueToTodo: issueToTodo,
+      allIssueChecklist: allIssueChecklist,
     );
   }
 
@@ -89,6 +107,7 @@ class TaigaState {
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
       loadingFilterIssue: loadingFilterIssue,
+      loadingIssue: loadingIssue,
       loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
@@ -96,7 +115,7 @@ class TaigaState {
       tasks: tasks,
       selectedMilestoneId: selectedMilestoneId,
       taskToTodo: taskToTodo,
-      allChecklist: allChecklist,
+      allTaskChecklist: allTaskChecklist,
       filterAssign: filterAssign,
       filterProgress: filterProgress,
       filteredTasks: filteredTasks,
@@ -107,6 +126,11 @@ class TaigaState {
       selectedProjectClockify: selectedProjectClockify,
       filterIssue: filterIssue,
       selectedFilterIssue: selectedFilterIssue,
+      issues: issues,
+      paginationIssues: paginationIssues,
+      selectedPageIssue: selectedPageIssue,
+      issueToTodo: issueToTodo,
+      allIssueChecklist: allIssueChecklist,
     );
   }
 
@@ -119,6 +143,7 @@ class TaigaState {
       loadingMilestone: loadingMilestone,
       loadingTask: loadingTask,
       loadingFilterIssue: loadingFilterIssue,
+      loadingIssue: loadingIssue,
       loadingContent: loadingContent,
       projects: projects,
       selectedProject: selectedProject,
@@ -126,7 +151,7 @@ class TaigaState {
       tasks: tasks,
       selectedMilestoneId: selectedMilestoneId,
       taskToTodo: taskToTodo,
-      allChecklist: allChecklist,
+      allTaskChecklist: allTaskChecklist,
       filterAssign: filterAssign,
       filterProgress: filterProgress,
       filteredTasks: filteredTasks,
@@ -137,6 +162,11 @@ class TaigaState {
       selectedProjectClockify: selectedProjectClockify,
       filterIssue: filterIssue,
       selectedFilterIssue: selectedFilterIssue,
+      issues: issues,
+      paginationIssues: paginationIssues,
+      selectedPageIssue: selectedPageIssue,
+      issueToTodo: issueToTodo,
+      allIssueChecklist: allIssueChecklist,
     );
   }
 
@@ -146,6 +176,7 @@ class TaigaState {
     bool? loadingMilestone,
     bool? loadingTask,
     bool? loadingFilterIssue,
+    bool? loadingIssue,
     bool? loadingContent,
     List<ProjectTaigaResponse>? projects,
     ProjectTaigaResponse? selectedProject,
@@ -154,13 +185,18 @@ class TaigaState {
     List<TasksResponse>? filteredTasks,
     int? selectedMilestoneId,
     List<TasksResponse>? taskToTodo,
-    bool? allChecklist,
+    bool? allTaskChecklist,
     MilestoneResponse? milestone,
     List<GroupUserStoryWithTask>? userStoryWithTask,
     List<Todo>? todos,
     List<ProjectClockify>? projectsClockify,
     FilterIssueResponse? filterIssue,
     FilterIssueResponse? selectedFilterIssue,
+    List<IssueResponse>? issues,
+    Pagination? paginationIssues,
+    int? selectedPageIssue,
+    List<IssueResponse>? issueToTodo,
+    bool? allIssueChecklist,
   }) {
     return TaigaState(
       loadingGlobal: loadingGlobal ?? this.loadingGlobal,
@@ -168,6 +204,7 @@ class TaigaState {
       loadingMilestone: loadingMilestone ?? this.loadingMilestone,
       loadingTask: loadingTask ?? this.loadingTask,
       loadingFilterIssue: loadingFilterIssue ?? this.loadingFilterIssue,
+      loadingIssue: loadingIssue ?? this.loadingIssue,
       loadingContent: loadingContent ?? this.loadingContent,
       projects: projects ?? this.projects,
       selectedProject: selectedProject ?? this.selectedProject,
@@ -176,7 +213,7 @@ class TaigaState {
       filteredTasks: filteredTasks ?? this.filteredTasks,
       selectedMilestoneId: selectedMilestoneId ?? this.selectedMilestoneId,
       taskToTodo: taskToTodo ?? this.taskToTodo,
-      allChecklist: allChecklist ?? this.allChecklist,
+      allTaskChecklist: allTaskChecklist ?? this.allTaskChecklist,
       filterAssign: filterAssign,
       filterProgress: filterProgress,
       milestone: milestone ?? this.milestone,
@@ -186,6 +223,11 @@ class TaigaState {
       selectedProjectClockify: selectedProjectClockify,
       filterIssue: filterIssue ?? this.filterIssue,
       selectedFilterIssue: selectedFilterIssue ?? this.selectedFilterIssue,
+      issues: issues ?? this.issues,
+      paginationIssues: paginationIssues ?? this.paginationIssues,
+      selectedPageIssue: selectedPageIssue ?? this.selectedPageIssue,
+      issueToTodo: issueToTodo ?? this.issueToTodo,
+      allIssueChecklist: allIssueChecklist ?? this.allIssueChecklist,
     );
   }
 
@@ -199,6 +241,7 @@ class TaigaState {
         other.loadingMilestone == loadingMilestone &&
         other.loadingTask == loadingTask &&
         other.loadingFilterIssue == loadingFilterIssue &&
+        other.loadingIssue == loadingIssue &&
         other.loadingContent == loadingContent &&
         listEquals(other.projects, projects) &&
         other.selectedProject == selectedProject &&
@@ -207,7 +250,7 @@ class TaigaState {
         listEquals(other.filteredTasks, filteredTasks) &&
         other.selectedMilestoneId == selectedMilestoneId &&
         listEquals(other.taskToTodo, taskToTodo) &&
-        other.allChecklist == allChecklist &&
+        other.allTaskChecklist == allTaskChecklist &&
         other.filterAssign == filterAssign &&
         other.filterProgress == filterProgress &&
         other.milestone == milestone &&
@@ -216,7 +259,12 @@ class TaigaState {
         listEquals(other.projectsClockify, projectsClockify) &&
         other.selectedProjectClockify == selectedProjectClockify &&
         other.filterIssue == filterIssue &&
-        other.selectedFilterIssue == selectedFilterIssue;
+        other.selectedFilterIssue == selectedFilterIssue &&
+        listEquals(other.issues, issues) &&
+        other.paginationIssues == paginationIssues &&
+        other.selectedPageIssue == selectedPageIssue &&
+        listEquals(other.issueToTodo, issueToTodo) &&
+        other.allIssueChecklist == allIssueChecklist;
   }
 
   @override
@@ -226,6 +274,7 @@ class TaigaState {
         loadingMilestone.hashCode ^
         loadingTask.hashCode ^
         loadingFilterIssue.hashCode ^
+        loadingIssue.hashCode ^
         loadingContent.hashCode ^
         projects.hashCode ^
         selectedProject.hashCode ^
@@ -234,7 +283,7 @@ class TaigaState {
         filteredTasks.hashCode ^
         selectedMilestoneId.hashCode ^
         taskToTodo.hashCode ^
-        allChecklist.hashCode ^
+        allTaskChecklist.hashCode ^
         filterAssign.hashCode ^
         filterProgress.hashCode ^
         milestone.hashCode ^
@@ -243,6 +292,11 @@ class TaigaState {
         projectsClockify.hashCode ^
         selectedProjectClockify.hashCode ^
         filterIssue.hashCode ^
-        selectedFilterIssue.hashCode;
+        selectedFilterIssue.hashCode ^
+        issues.hashCode ^
+        paginationIssues.hashCode ^
+        selectedPageIssue.hashCode ^
+        issueToTodo.hashCode ^
+        allIssueChecklist.hashCode;
   }
 }

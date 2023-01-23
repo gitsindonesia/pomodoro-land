@@ -2,32 +2,29 @@ import 'dart:convert';
 
 class Pagination {
   Pagination({
-    required this.xPaginated,
     required this.xPaginatedBy,
-    required this.xPaginatedCount,
-    required this.xPaginatedCurrent,
+    required this.xPaginationCount,
+    required this.xPaginationCurrent,
   });
 
-  final bool xPaginated;
   final int xPaginatedBy;
-  final int xPaginatedCount;
-  final int xPaginatedCurrent;
+  final int xPaginationCount;
+  final int xPaginationCurrent;
 
   Map<String, dynamic> toMap() {
     return {
-      'x-paginated': xPaginated,
       'x-paginated-by': xPaginatedBy,
-      'x-paginated-count': xPaginatedCount,
-      'x-paginated-current': xPaginatedCurrent,
+      'x-pagination-count': xPaginationCount,
+      'x-pagination-current': xPaginationCurrent,
     };
   }
 
   factory Pagination.fromMap(Map<String, dynamic> map) {
     return Pagination(
-      xPaginated: map['x-paginated'] ?? false,
-      xPaginatedBy: map['x-paginated-by']?.toInt() ?? 0,
-      xPaginatedCount: map['x-paginated-count']?.toInt() ?? 0,
-      xPaginatedCurrent: map['x-paginated-current']?.toInt() ?? 0,
+      xPaginatedBy: int.parse(map['x-paginated-by']?.toString() ?? '0'),
+      xPaginationCount: int.parse(map['x-pagination-count']?.toString() ?? '0'),
+      xPaginationCurrent:
+          int.parse(map['x-pagination-current']?.toString() ?? '0'),
     );
   }
 
@@ -41,17 +38,15 @@ class Pagination {
     if (identical(this, other)) return true;
 
     return other is Pagination &&
-        other.xPaginated == xPaginated &&
         other.xPaginatedBy == xPaginatedBy &&
-        other.xPaginatedCount == xPaginatedCount &&
-        other.xPaginatedCurrent == xPaginatedCurrent;
+        other.xPaginationCount == xPaginationCount &&
+        other.xPaginationCurrent == xPaginationCurrent;
   }
 
   @override
   int get hashCode {
-    return xPaginated.hashCode ^
-        xPaginatedBy.hashCode ^
-        xPaginatedCount.hashCode ^
-        xPaginatedCurrent.hashCode;
+    return xPaginatedBy.hashCode ^
+        xPaginationCount.hashCode ^
+        xPaginationCurrent.hashCode;
   }
 }

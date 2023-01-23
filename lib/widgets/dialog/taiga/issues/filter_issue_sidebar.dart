@@ -6,7 +6,7 @@ import 'package:pomodoro_land/utils/extension.dart';
 import 'package:pomodoro_land/widgets/button.dart';
 import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
-import '../../../cubit/taiga/taiga_cubit.dart';
+import '../../../../cubit/taiga/taiga_cubit.dart';
 
 class FilterIssueSidebar extends StatelessWidget {
   const FilterIssueSidebar({super.key});
@@ -35,27 +35,29 @@ class FilterIssueSidebar extends StatelessWidget {
       width: 200,
       child: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                const Expanded(
-                  child: Text('Filter', style: TextStyle(fontSize: 24)),
-                ),
-                InkWellPressed(
-                  onPressed: () => context
-                      .read<TaigaCubit>()
-                      .onClearFilterIssuePressed(context),
-                  child: Image.asset(
-                    Images.delete,
-                    width: 24,
-                    height: 24,
+          SizedBox(
+            height: 50,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  const Expanded(
+                    child: Text('Filter', style: TextStyle(fontSize: 24)),
                   ),
-                ),
-              ],
+                  InkWellPressed(
+                    onPressed: () => context
+                        .read<TaigaCubit>()
+                        .onClearFilterIssuePressed(context),
+                    child: Image.asset(
+                      Images.delete,
+                      width: 24,
+                      height: 24,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
           const Divider(height: 1),
           Expanded(
             child: SingleChildScrollView(
