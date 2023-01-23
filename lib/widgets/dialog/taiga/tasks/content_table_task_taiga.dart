@@ -133,7 +133,7 @@ class ContentTableTaskTaiga extends StatelessWidget {
                                   initialSelectedTaigaStatusId: e.status,
                                   onTaigaStatus: (value) => context
                                       .read<TaigaCubit>()
-                                      .onEditTaigaStatus(
+                                      .onEditTaskTaigaStatus(
                                           context, e, value, alreadyInTodo),
                                 ),
                               ),

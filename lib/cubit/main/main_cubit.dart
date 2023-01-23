@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -122,24 +124,64 @@ class MainCubit extends Cubit<MainState> {
 
   Future<void> setupTaigaStatus() async {
     emit(state.copyWith(loadingGlobal: true));
+    List<Future> futures = [];
     for (var todo in state.todos) {
       if (todo.taiga?.taskTaiga != null) {
-        final taskDetail = await ServiceTaiga.taskDetail(
-          loginTaiga?.authToken ?? '',
-          projectId: todo.taiga?.projectDetail.id ?? 0,
-          milestoneId: todo.taiga?.taskTaiga?.milestone ?? 0,
-          ref: todo.taiga?.taskTaiga?.ref ?? 0,
+        futures.add(
+          setupTaskTaigaStatus(token: loginTaiga?.authToken ?? '', todo: todo),
         );
-        updateTodoTaskStatus(
-          todo: todo,
-          stasusId: taskDetail.status,
-          stasusName: taskDetail.statusExtraInfo?.name,
-          stasusColor: taskDetail.statusExtraInfo?.color,
-          stasusIsClosed: taskDetail.statusExtraInfo?.isClosed,
+      }
+      if (todo.taiga?.issueTaiga != null) {
+        futures.add(
+          setupIssueTaigaStatus(token: loginTaiga?.authToken ?? '', todo: todo),
         );
       }
     }
+
+    const step = 10;
+    for (var i = 0; i < futures.length; i += step) {
+      final last = (i + 10) > futures.length ? futures.length : i + 10;
+      await Future.wait(futures.getRange(i, last));
+    }
+
     emit(state.copyWith(loadingGlobal: false));
+  }
+
+  Future<void> setupTaskTaigaStatus({
+    required String token,
+    required Todo todo,
+  }) async {
+    final taskDetail = await ServiceTaiga.taskDetail(
+      loginTaiga?.authToken ?? '',
+      projectId: todo.taiga?.projectDetail.id ?? 0,
+      milestoneId: todo.taiga?.taskTaiga?.milestone ?? 0,
+      ref: todo.taiga?.taskTaiga?.ref ?? 0,
+    );
+    updateTodoTaskTaigaStatus(
+      todo: todo,
+      stasusId: taskDetail.status,
+      stasusName: taskDetail.statusExtraInfo?.name,
+      stasusColor: taskDetail.statusExtraInfo?.color,
+      stasusIsClosed: taskDetail.statusExtraInfo?.isClosed,
+    );
+  }
+
+  Future<void> setupIssueTaigaStatus({
+    required String token,
+    required Todo todo,
+  }) async {
+    final issueDetail = await ServiceTaiga.issueDetail(
+      loginTaiga?.authToken ?? '',
+      projectId: todo.taiga?.projectDetail.id ?? 0,
+      ref: todo.taiga?.issueTaiga?.ref ?? 0,
+    );
+    updateTodoIssueTaigaStatus(
+      todo: todo,
+      stasusId: issueDetail.status,
+      stasusName: issueDetail.statusExtraInfo?.name,
+      stasusColor: issueDetail.statusExtraInfo?.color,
+      stasusIsClosed: issueDetail.statusExtraInfo?.isClosed,
+    );
   }
 
   void handleTimer(Timer timer) {
@@ -583,7 +625,6 @@ class MainCubit extends Cubit<MainState> {
       );
 
       if (!success) {
-        // ignore: use_build_context_synchronously
         context.showSnackBar(
           SnackBar(
             backgroundColor: Colors.red[100],
@@ -595,7 +636,7 @@ Some other user inside Taiga has changed this before and your changes can’t be
           ),
         );
       } else {
-        updateTodoTaskStatus(
+        updateTodoTaskTaigaStatus(
           todo: todo,
           stasusId: value?.id,
           stasusName: value?.name,
@@ -607,7 +648,7 @@ Some other user inside Taiga has changed this before and your changes can’t be
     emit(state.copyWith(loadingGlobal: false));
   }
 
-  void updateTodoTaskStatus({
+  void updateTodoTaskTaigaStatus({
     required Todo todo,
     required int? stasusId,
     required String? stasusName,
@@ -631,6 +672,71 @@ Some other user inside Taiga has changed this before and your changes can’t be
     );
   }
 
-  void onEditIssueTaigaStatusTodo(BuildContext context, Todo todo,
-      IssueStatusesProjectDetailTaiga? value) {}
+  void updateTodoIssueTaigaStatus({
+    required Todo todo,
+    required int? stasusId,
+    required String? stasusName,
+    required String? stasusColor,
+    required bool? stasusIsClosed,
+  }) {
+    updateTodo(
+      todo,
+      todo.copyWith(
+        taiga: todo.taiga?.copyWith(
+          issueTaiga: todo.taiga?.issueTaiga?.copyWith(
+            status: stasusId,
+            statusExtraInfo: todo.taiga?.issueTaiga?.statusExtraInfo?.copyWith(
+              name: stasusName,
+              color: stasusColor,
+              isClosed: stasusIsClosed,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onEditIssueTaigaStatusTodo(
+    BuildContext context,
+    Todo todo,
+    IssueStatusesProjectDetailTaiga? value,
+  ) async {
+    emit(state.copyWith(loadingGlobal: true));
+    if (loginTaiga != null) {
+      final issueDetail = await ServiceTaiga.issueDetail(
+        loginTaiga!.authToken ?? '',
+        projectId: todo.taiga?.projectDetail.id ?? 0,
+        ref: todo.taiga?.issueTaiga?.ref ?? 0,
+      );
+
+      final success = await ServiceTaiga.changeIssueStatus(
+        loginTaiga!.authToken ?? '',
+        issueId: issueDetail.id ?? 0,
+        statusId: value?.id ?? 0,
+        version: issueDetail.version ?? 0,
+      );
+
+      if (!success) {
+        context.showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red[100],
+            content: Text(
+              '''Oops, something went wrong...
+Some other user inside Taiga has changed this before and your changes can’t be applied. Save them elsewhere, reload the page and re-apply your changes again or they will be lost.''',
+              style: TextStyle(fontSize: 20, color: Colors.red[700]),
+            ),
+          ),
+        );
+      } else {
+        updateTodoIssueTaigaStatus(
+          todo: todo,
+          stasusId: value?.id,
+          stasusName: value?.name,
+          stasusColor: value?.color,
+          stasusIsClosed: value?.isClosed,
+        );
+      }
+    }
+    emit(state.copyWith(loadingGlobal: false));
+  }
 }

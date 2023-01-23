@@ -240,8 +240,8 @@ class IssueResponse {
   }
 
   IssueResponse copyWith({
-    dynamic? tags,
-    dynamic? dueDate,
+    dynamic tags,
+    dynamic dueDate,
     String? dueDateReason,
     String? dueDateStatus,
     List<dynamic>? attachments,
@@ -265,9 +265,9 @@ class IssueResponse {
     int? milestone,
     DateTime? createdDate,
     DateTime? modifiedDate,
-    dynamic? finishedDate,
+    dynamic finishedDate,
     String? subject,
-    dynamic? externalReference,
+    dynamic externalReference,
     int? version,
     List<int>? watchers,
     bool? isBlocked,

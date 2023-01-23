@@ -454,7 +454,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     await SettingStorage().writeSelectedProjectClockify(value);
   }
 
-  void onEditTaigaStatus(
+  void onEditTaskTaigaStatus(
     BuildContext context,
     TasksResponse task,
     TaskStatusesProjectDetailTaiga? value,
@@ -700,8 +700,44 @@ Some other user inside Taiga has changed this before and your changes can’t be
     }
   }
 
-  void onEditIssueTaigaStatus(BuildContext context, e,
-      IssueStatusesProjectDetailTaiga? value, bool alreadyInTodo) {}
+  void onEditIssueTaigaStatus(
+    BuildContext context,
+    IssueResponse issue,
+    IssueStatusesProjectDetailTaiga? value,
+    bool alreadyInTodo,
+  ) async {
+    emit(state.copyWith(loadingContent: true));
+    if (loginTaiga != null && state.projectDetail != null) {
+      final issueDetail = await ServiceTaiga.issueDetail(
+        loginTaiga!.authToken ?? '',
+        projectId: state.projectDetail?.id ?? 0,
+        ref: issue.ref ?? 0,
+      );
+
+      final success = await ServiceTaiga.changeIssueStatus(
+        loginTaiga!.authToken ?? '',
+        issueId: issueDetail.id ?? 0,
+        statusId: value?.id ?? 0,
+        version: issueDetail.version ?? 0,
+      );
+
+      if (!success) {
+        context.showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red[100],
+            content: Text(
+              '''Oops, something went wrong...
+Some other user inside Taiga has changed this before and your changes can’t be applied. Save them elsewhere, reload the page and re-apply your changes again or they will be lost.''',
+              style: TextStyle(fontSize: 20, color: Colors.red[700]),
+            ),
+          ),
+        );
+      } else {
+        mapIssueIdWithChangedStatus[issueDetail.id ?? 0] = value;
+      }
+    }
+    emit(state.copyWith(loadingContent: false));
+  }
 
   void onNumberPaginationPressed(BuildContext context, int page) {
     emit(state.copyWith(selectedPageIssue: page));

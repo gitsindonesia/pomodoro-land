@@ -14,6 +14,8 @@ import 'package:pomodoro_land/model/taiga/response/tasks_response.dart';
 import 'package:pomodoro_land/model/tuple.dart';
 import 'package:pomodoro_land/storage/taiga_storage.dart';
 
+import '../model/taiga/response/issue_detail_response.dart';
+
 abstract class ServiceTaiga {
   static Uri taigaUrl(String path) =>
       Uri.parse('https://taiga.gits.id/api/v1$path');
@@ -215,5 +217,40 @@ abstract class ServiceTaiga {
       return Tuple2(pagination, issues);
     }
     throw Exception('Tasks not found');
+  }
+
+  static Future<IssueDetailResponse> issueDetail(
+    String token, {
+    required int projectId,
+    required int ref,
+  }) async {
+    final response = await http.get(
+      taigaUrl('/issues/by_ref?&project=$projectId&ref=$ref'),
+      headers: getHeaders(token),
+    );
+    if (response.statusCode != 200) {
+      throw Exception(jsonDecode(response.body)['detail'] ?? 'Issue not found');
+    }
+    return IssueDetailResponse.fromJson(response.body);
+  }
+
+  static Future<bool> changeIssueStatus(
+    String token, {
+    required int issueId,
+    required int statusId,
+    required int version,
+  }) async {
+    final response = await http.patch(
+      taigaUrl('/issues/$issueId'),
+      headers: getHeaders(token),
+      body: jsonEncode({
+        'status': statusId,
+        'version': version,
+      }),
+    );
+    if (response.statusCode != 200) {
+      return false;
+    }
+    return true;
   }
 }
