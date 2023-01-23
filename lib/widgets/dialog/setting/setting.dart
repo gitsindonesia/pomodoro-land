@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/setting/setting_cubit.dart';
 import 'package:pomodoro_land/widgets/button.dart';
+import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../../../constants/images.dart';
 import 'clockify_section.dart';
@@ -60,11 +61,8 @@ class _SettingState extends State<Setting> {
                   children: [
                     const Text('Setting', style: TextStyle(fontSize: 40)),
                     const Spacer(),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      onTap: () => Navigator.of(context).pop(),
+                    InkWellPressed(
+                      onPressed: () => Navigator.of(context).pop(),
                       child: Image.asset(Images.close, width: 60),
                     ),
                   ],

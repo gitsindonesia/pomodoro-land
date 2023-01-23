@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../constants/images.dart';
 
@@ -8,19 +9,29 @@ class Button extends StatelessWidget {
     this.onPressed,
     required this.text,
     this.disable = false,
-  }) : super(key: key);
+  })  : image = Images.button,
+        textColor = null,
+        super(key: key);
+
+  const Button.white({
+    Key? key,
+    this.onPressed,
+    required this.text,
+    this.disable = false,
+  })  : image = Images.buttonWhite,
+        textColor = Colors.white,
+        super(key: key);
 
   final GestureTapCallback? onPressed;
   final String text;
   final bool disable;
+  final String image;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      splashColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      onTap: disable ? null : onPressed,
+    return InkWellPressed(
+      onPressed: disable ? null : onPressed,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: 60,
@@ -28,13 +39,14 @@ class Button extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(disable ? Images.buttonInactive : Images.button),
+            image: AssetImage(disable ? Images.buttonInactive : image),
             fit: BoxFit.contain,
           ),
         ),
         child: Text(
           text,
-          style: TextStyle(fontSize: 20, color: disable ? Colors.grey : null),
+          style:
+              TextStyle(fontSize: 20, color: disable ? Colors.grey : textColor),
         ),
       ),
     );

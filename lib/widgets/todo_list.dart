@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/main/main_cubit.dart';
-import 'package:pomodoro_land/widgets/dropdown_project.dart';
+import 'package:pomodoro_land/utils/extension.dart';
+import 'package:pomodoro_land/widgets/dropdown_project_clockify.dart';
 import 'package:pomodoro_land/widgets/item_todo.dart';
 
 import '../constants/images.dart';
+import 'button.dart';
 import 'empty_state.dart';
+import 'ink_well_pressed.dart';
 
 class TodoList extends StatelessWidget {
   const TodoList({super.key});
@@ -21,11 +24,17 @@ class TodoList extends StatelessWidget {
     final taskOnGoing = todos.where((element) => !element.checklist);
     final taskDone = todos.where((element) => element.checklist);
 
+    final focusTodo = context.select((MainCubit bloc) => bloc.state.focusTodo);
+    final loadingAddTimeClockify =
+        context.select((MainCubit bloc) => bloc.state.loadingAddTimeClockify);
+    final startDateTimeTask =
+        context.select((MainCubit bloc) => bloc.state.startDateTimeTask);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (projects.isNotEmpty) ...[
-          DropdownProject(
+          DropdownProjectClockify(
             items: projects,
             selectedProject: selectedProject,
             onProjectSelected: context.read<MainCubit>().onProjectSelected,
@@ -59,9 +68,25 @@ class TodoList extends StatelessWidget {
           fit: BoxFit.fitWidth,
         ),
         const SizedBox(height: 16),
-        Text(
-          '${todos.where((element) => element.checklist).length} / ${todos.length} done',
-          style: const TextStyle(fontSize: 24),
+        Row(
+          children: [
+            Text(
+              '${todos.where((element) => element.checklist).length} / ${todos.length} done',
+              style: const TextStyle(fontSize: 24),
+            ),
+            if (taskOnGoing.isNotEmpty) ...[
+              const Spacer(),
+              InkWellPressed(
+                onPressed: () =>
+                    context.read<MainCubit>().onDeleteAllTodo(context, false),
+                child: const Text(
+                  'Delete All',
+                  style: TextStyle(fontSize: 24, color: Colors.red),
+                ),
+              ),
+              const SizedBox(width: 32),
+            ],
+          ],
         ),
         const SizedBox(height: 16),
         if (todos.isEmpty)
@@ -72,22 +97,123 @@ class TodoList extends StatelessWidget {
               slivers: [
                 SliverList(
                   delegate: SliverChildListDelegate(
-                    taskOnGoing.map((e) => ItemTodo(todo: e)).toList(),
+                    taskOnGoing
+                        .map((e) => ItemTodo(
+                              key: ValueKey(e.toString()),
+                              todo: e,
+                              selected: e.task == focusTodo?.task,
+                            ))
+                        .toList(),
                   ),
                 ),
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Text(
-                      'Task done',
-                      style: TextStyle(fontSize: 24),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Row(
+                      children: const [
+                        Text(
+                          'Task done',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 SliverList(
                   delegate: SliverChildListDelegate(
-                    taskDone.map((e) => ItemTodo(todo: e)).toList(),
+                    taskDone
+                        .map((e) => ItemTodo(
+                              key: ValueKey(e.toString()),
+                              todo: e,
+                              selected: e.task == focusTodo?.task,
+                            ))
+                        .toList(),
                   ),
+                ),
+              ],
+            ),
+          ),
+        if (focusTodo != null)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(Images.focusLine),
+                fit: BoxFit.fill,
+              ),
+            ),
+            child: Row(
+              children: [
+                InkWellPressed(
+                  onPressed: () =>
+                      context.read<MainCubit>().onStartTimePressed(context),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Start Time',
+                        style: TextStyle(fontSize: 14, color: Colors.white),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        startDateTimeTask.toFormatTime(),
+                        style:
+                            const TextStyle(fontSize: 14, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        focusTodo.task,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            const TextStyle(fontSize: 24, color: Colors.white),
+                      ),
+                      if (focusTodo.project != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          focusTodo.project?.name ?? '',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: focusTodo.project?.color,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 32),
+                Row(
+                  children: [
+                    loadingAddTimeClockify
+                        ? const SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation(Colors.black),
+                            ),
+                          )
+                        : Button.white(
+                            onPressed: () => context
+                                .read<MainCubit>()
+                                .onDoneFocusTodo(focusTodo),
+                            text: 'Done',
+                          ),
+                    const SizedBox(width: 16),
+                    InkWellPressed(
+                      onPressed: () =>
+                          context.read<MainCubit>().onClearFocusTodo(),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(fontSize: 20, color: Colors.white),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

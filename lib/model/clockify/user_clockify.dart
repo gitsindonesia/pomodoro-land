@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-class User {
-  User({
+class UserClockify {
+  UserClockify({
     required this.id,
     required this.name,
   });
@@ -16,8 +16,8 @@ class User {
     };
   }
 
-  factory User.fromMap(Map<String, dynamic> map) {
-    return User(
+  factory UserClockify.fromMap(Map<String, dynamic> map) {
+    return UserClockify(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
     );
@@ -25,13 +25,14 @@ class User {
 
   String toJson() => json.encode(toMap());
 
-  factory User.fromJson(String source) => User.fromMap(json.decode(source));
+  factory UserClockify.fromJson(String source) =>
+      UserClockify.fromMap(json.decode(source));
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is User && other.id == id && other.name == name;
+    return other is UserClockify && other.id == id && other.name == name;
   }
 
   @override

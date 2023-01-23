@@ -1,47 +1,49 @@
 import 'package:flutter/material.dart';
 
 import '../constants/images.dart';
-import '../model/project.dart';
+import '../model/clockify/project_clockify.dart';
 
-class DropdownProject extends StatelessWidget {
-  const DropdownProject({
+class DropdownProjectClockify extends StatelessWidget {
+  const DropdownProjectClockify({
     Key? key,
     required this.selectedProject,
     required this.onProjectSelected,
     required this.items,
+    this.fontSize = 20,
   }) : super(key: key);
 
-  final Project? selectedProject;
-  final ValueChanged<Project?> onProjectSelected;
-  final List<Project> items;
+  final ProjectClockify? selectedProject;
+  final ValueChanged<ProjectClockify?> onProjectSelected;
+  final List<ProjectClockify> items;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Image.asset(Images.project, width: 34),
+        Image.asset(Images.clockify, width: 34),
         const SizedBox(width: 24),
         Expanded(
-          child: DropdownButton<Project>(
+          child: DropdownButton<ProjectClockify>(
             isExpanded: true,
             borderRadius: BorderRadius.circular(8),
             icon: Image.asset(Images.dropdown),
             underline: const SizedBox.shrink(),
             value: selectedProject,
             items: [
-              const DropdownMenuItem<Project>(
+              DropdownMenuItem<ProjectClockify>(
                 value: null,
                 child: Text(
                   'Not a Project',
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: fontSize),
                 ),
               ),
               ...items.map(
-                (e) => DropdownMenuItem<Project>(
+                (e) => DropdownMenuItem<ProjectClockify>(
                   value: e,
                   child: Text(
                     e.name,
-                    style: TextStyle(fontSize: 20, color: e.color),
+                    style: TextStyle(fontSize: fontSize, color: e.color),
                   ),
                 ),
               ),

@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
-import '../model/project.dart';
-import '../model/user.dart';
-import '../model/workspace.dart';
+import '../model/clockify/project_clockify.dart';
+import '../model/clockify/user_clockify.dart';
+import '../model/clockify/workspace_clockify.dart';
 
-abstract class Service {
+abstract class ServiceClockify {
   static Uri clockifyUrl(String path) =>
       Uri.parse('https://api.clockify.me/api/v1$path');
   static Map<String, String> getHeaders(String apiKey) => {
@@ -14,21 +14,21 @@ abstract class Service {
         'X-Api-Key': apiKey,
       };
 
-  static Future<User> getUser(String apiKey) async {
+  static Future<UserClockify> getUser(String apiKey) async {
     final response =
         await http.get(clockifyUrl('/user'), headers: getHeaders(apiKey));
-    return User.fromJson(response.body);
+    return UserClockify.fromJson(response.body);
   }
 
-  static Future<List<Workspace>> getWorkspaces(String apiKey) async {
+  static Future<List<WorkspaceClockify>> getWorkspaces(String apiKey) async {
     final response =
         await http.get(clockifyUrl('/workspaces'), headers: getHeaders(apiKey));
     return (jsonDecode(response.body) as List)
-        .map((e) => Workspace.fromMap(e))
+        .map((e) => WorkspaceClockify.fromMap(e))
         .toList();
   }
 
-  static Future<List<Project>> getProjects(
+  static Future<List<ProjectClockify>> getProjects(
       String apiKey, String workspaceId) async {
     final response = await http.get(
       clockifyUrl('/workspaces/$workspaceId/projects').replace(
@@ -37,7 +37,7 @@ abstract class Service {
       headers: getHeaders(apiKey),
     );
     return (jsonDecode(response.body) as List)
-        .map((e) => Project.fromMap(e))
+        .map((e) => ProjectClockify.fromMap(e))
         .toList();
   }
 

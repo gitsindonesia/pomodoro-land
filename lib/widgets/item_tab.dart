@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../constants/images.dart';
 
@@ -18,11 +19,8 @@ class ItemTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      splashColor: Colors.transparent,
-      hoverColor: Colors.transparent,
-      highlightColor: Colors.transparent,
-      onTap: onPressed,
+    return InkWellPressed(
+      onPressed: onPressed,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
         decoration: BoxDecoration(

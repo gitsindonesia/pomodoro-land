@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/setting/setting_cubit.dart';
-import 'package:pomodoro_land/model/workspace.dart';
+import 'package:pomodoro_land/model/clockify/workspace_clockify.dart';
+import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 
 import '../../../constants/images.dart';
 
@@ -49,11 +50,8 @@ class ClockifySection extends StatelessWidget {
                       ),
                     ),
                   )
-                : InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    onTap: () => context
+                : InkWellPressed(
+                    onPressed: () => context
                         .read<SettingCubit>()
                         .onCheckApiKeyClockify(
                             context, controllerApiKeyClockify.text),
@@ -90,7 +88,7 @@ class ClockifySection extends StatelessWidget {
               const Text('Workspace:', style: TextStyle(fontSize: 20)),
               const SizedBox(width: 16),
               Flexible(
-                child: DropdownButton<Workspace>(
+                child: DropdownButton<WorkspaceClockify>(
                   borderRadius: BorderRadius.circular(8),
                   icon: Image.asset(Images.dropdown),
                   hint: const Text('Select Workspace',
@@ -99,7 +97,7 @@ class ClockifySection extends StatelessWidget {
                       Image.asset(Images.lineShort, fit: BoxFit.fitWidth),
                   value: selectedWorkspace,
                   items: workspaces
-                      .map((e) => DropdownMenuItem<Workspace>(
+                      .map((e) => DropdownMenuItem<WorkspaceClockify>(
                             value: e,
                             child: Text(e.name,
                                 style: const TextStyle(fontSize: 24)),

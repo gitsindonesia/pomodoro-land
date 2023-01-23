@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/main/main_cubit.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 import 'package:pomodoro_land/widgets/button.dart';
+import 'package:pomodoro_land/widgets/ink_well_pressed.dart';
 import 'package:pomodoro_land/widgets/tab_pomodoro.dart';
 
 import '../constants/images.dart';
@@ -14,15 +15,11 @@ class CountdownSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = context.select((MainCubit bloc) => bloc.state.status);
-    final focusTodo = context.select((MainCubit bloc) => bloc.state.focusTodo);
     final duration = context.select((MainCubit bloc) => bloc.state.duration);
     final round = context.select((MainCubit bloc) => bloc.state.round);
     final isStart = context.select((MainCubit bloc) => bloc.state.isStart);
     final backgroundMusic =
         context.select((MainCubit bloc) => bloc.state.backgroundMusic);
-    final loadingAddTimeClockify =
-        context.select((MainCubit bloc) => bloc.state.loadingAddTimeClockify);
 
     List<DropdownMenuItem<String>> getBackgroundMusic() {
       List<DropdownMenuItem<String>> items = [];
@@ -65,11 +62,8 @@ class CountdownSection extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
-                    hoverColor: Colors.transparent,
-                    onTap: () =>
+                  InkWellPressed(
+                    onPressed: () =>
                         context.read<MainCubit>().onResetRoundPressed(context),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -94,11 +88,8 @@ class CountdownSection extends StatelessWidget {
                       ),
                       if (isStart) ...[
                         const SizedBox(width: 8),
-                        InkWell(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
-                          onTap: () => context
+                        InkWellPressed(
+                          onPressed: () => context
                               .read<MainCubit>()
                               .onNextPomodoroPressed(context),
                           child: Image.asset(Images.next, width: 46),
@@ -131,78 +122,6 @@ class CountdownSection extends StatelessWidget {
               ),
             ],
           ),
-          if (focusTodo != null) ...[
-            const SizedBox(height: 32),
-            SizedBox(
-              width: 600,
-              child: Column(
-                children: [
-                  Text(
-                    status,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 24),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (focusTodo.project != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      focusTodo.project?.name ?? '',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: focusTodo.project?.color,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (!loadingAddTimeClockify) const SizedBox(width: 60),
-                InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  hoverColor: Colors.transparent,
-                  onTap: () => context.read<MainCubit>().onClearFocusTodo(),
-                  child: const Text('Clear', style: TextStyle(fontSize: 20)),
-                ),
-                const SizedBox(width: 60),
-                loadingAddTimeClockify
-                    ? const SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation(Colors.black),
-                        ),
-                      )
-                    : InkWell(
-                        splashColor: Colors.transparent,
-                        highlightColor: Colors.transparent,
-                        hoverColor: Colors.transparent,
-                        onTap: () => context
-                            .read<MainCubit>()
-                            .onDoneFocusTodo(focusTodo),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 60,
-                            vertical: 32,
-                          ),
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage(Images.button),
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                          child: const Text('Task Done',
-                              style: TextStyle(fontSize: 20)),
-                        ),
-                      ),
-              ],
-            ),
-          ],
         ],
       ),
     );

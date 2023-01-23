@@ -11,11 +11,14 @@ abstract class Images {
   static const String setting = 'assets/images/setting.png';
   static const String close = 'assets/images/close.png';
   static const String dropdown = 'assets/images/dropdown.png';
-  static const String project = 'assets/images/project.png';
   static const String edit = 'assets/images/edit.png';
   static const String next = 'assets/images/next.png';
   static const String refresh = 'assets/images/refresh.png';
   static const String toggleOn = 'assets/images/toggle-on.png';
   static const String toggleOff = 'assets/images/toggle-off.png';
+  static const String clockify = 'assets/images/clockify.png';
+  static const String taiga = 'assets/images/taiga.png';
+  static const String buttonWhite = 'assets/images/button-white.png';
+  static const String focusLine = 'assets/images/focus-line.png';
   static const String pomodoroTomato = 'assets/images/pomodoro-tomato.png';
 }

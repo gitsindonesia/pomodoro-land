@@ -8,13 +8,14 @@ class MainState {
     required this.todos,
     required this.history,
     this.focusTodo,
-    required this.status,
     required this.indexTab,
     required this.backgroundMusic,
     required this.projects,
     this.selectedProject,
     required this.loadingAddTimeClockify,
     required this.indexTabPomodoro,
+    required this.startDateTimeTask,
+    required this.loadingGlobal,
   });
 
   final int round;
@@ -23,13 +24,14 @@ class MainState {
   final List<Todo> todos;
   final List<History> history;
   final Todo? focusTodo;
-  final String status;
   final int indexTab;
   final String backgroundMusic;
-  final List<Project> projects;
-  final Project? selectedProject;
+  final List<ProjectClockify> projects;
+  final ProjectClockify? selectedProject;
   final bool loadingAddTimeClockify;
   final int indexTabPomodoro;
+  final DateTime startDateTimeTask;
+  final bool loadingGlobal;
 
   MainState setFocusTodo(Todo? focusTodo) {
     return MainState(
@@ -38,7 +40,6 @@ class MainState {
       isStart: isStart,
       todos: todos,
       history: history,
-      status: status,
       focusTodo: focusTodo,
       indexTab: indexTab,
       backgroundMusic: backgroundMusic,
@@ -46,17 +47,18 @@ class MainState {
       selectedProject: selectedProject,
       loadingAddTimeClockify: loadingAddTimeClockify,
       indexTabPomodoro: indexTabPomodoro,
+      startDateTimeTask: startDateTimeTask,
+      loadingGlobal: loadingGlobal,
     );
   }
 
-  MainState setSelectedProject(Project? selectedProject) {
+  MainState setSelectedProject(ProjectClockify? selectedProject) {
     return MainState(
       round: round,
       duration: duration,
       isStart: isStart,
       todos: todos,
       history: history,
-      status: status,
       focusTodo: focusTodo,
       indexTab: indexTab,
       backgroundMusic: backgroundMusic,
@@ -64,6 +66,8 @@ class MainState {
       selectedProject: selectedProject,
       loadingAddTimeClockify: loadingAddTimeClockify,
       indexTabPomodoro: indexTabPomodoro,
+      startDateTimeTask: startDateTimeTask,
+      loadingGlobal: loadingGlobal,
     );
   }
 
@@ -73,12 +77,13 @@ class MainState {
     bool? isStart,
     List<Todo>? todos,
     List<History>? history,
-    String? status,
     int? indexTab,
     String? backgroundMusic,
-    List<Project>? projects,
+    List<ProjectClockify>? projects,
     bool? loadingAddTimeClockify,
     int? indexTabPomodoro,
+    DateTime? startDateTimeTask,
+    bool? loadingGlobal,
   }) {
     return MainState(
       round: round ?? this.round,
@@ -87,7 +92,6 @@ class MainState {
       todos: todos ?? this.todos,
       history: history ?? this.history,
       focusTodo: focusTodo,
-      status: status ?? this.status,
       indexTab: indexTab ?? this.indexTab,
       backgroundMusic: backgroundMusic ?? this.backgroundMusic,
       projects: projects ?? this.projects,
@@ -95,6 +99,8 @@ class MainState {
       loadingAddTimeClockify:
           loadingAddTimeClockify ?? this.loadingAddTimeClockify,
       indexTabPomodoro: indexTabPomodoro ?? this.indexTabPomodoro,
+      startDateTimeTask: startDateTimeTask ?? this.startDateTimeTask,
+      loadingGlobal: loadingGlobal ?? this.loadingGlobal,
     );
   }
 
@@ -109,13 +115,14 @@ class MainState {
         listEquals(other.todos, todos) &&
         listEquals(other.history, history) &&
         other.focusTodo == focusTodo &&
-        other.status == status &&
         other.indexTab == indexTab &&
         other.backgroundMusic == backgroundMusic &&
         listEquals(other.projects, projects) &&
         other.selectedProject == selectedProject &&
         other.loadingAddTimeClockify == loadingAddTimeClockify &&
-        other.indexTabPomodoro == indexTabPomodoro;
+        other.indexTabPomodoro == indexTabPomodoro &&
+        other.startDateTimeTask == startDateTimeTask &&
+        other.loadingGlobal == loadingGlobal;
   }
 
   @override
@@ -126,12 +133,13 @@ class MainState {
         todos.hashCode ^
         history.hashCode ^
         focusTodo.hashCode ^
-        status.hashCode ^
         indexTab.hashCode ^
         backgroundMusic.hashCode ^
         projects.hashCode ^
         selectedProject.hashCode ^
         loadingAddTimeClockify.hashCode ^
-        indexTabPomodoro.hashCode;
+        indexTabPomodoro.hashCode ^
+        startDateTimeTask.hashCode ^
+        loadingGlobal.hashCode;
   }
 }

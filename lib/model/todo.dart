@@ -1,6 +1,7 @@
 import 'dart:convert';
 
-import 'package:pomodoro_land/model/project.dart';
+import 'package:pomodoro_land/model/clockify/project_clockify.dart';
+import 'package:pomodoro_land/model/taiga.dart';
 import 'package:pomodoro_land/utils/extension.dart';
 
 class Todo {
@@ -9,12 +10,14 @@ class Todo {
     required this.task,
     required this.dateTime,
     this.project,
+    this.taiga,
   });
 
   final bool checklist;
   final String task;
   final DateTime dateTime;
-  final Project? project;
+  final ProjectClockify? project;
+  final Taiga? taiga;
 
   Map<String, dynamic> toMap() {
     return {
@@ -22,6 +25,7 @@ class Todo {
       'task': task,
       'date_time': dateTime.toMap(),
       'project': project?.toMap(),
+      'taiga': taiga?.toMap(),
     };
   }
 
@@ -30,7 +34,10 @@ class Todo {
       checklist: map['checklist'] ?? false,
       task: map['task'] ?? '',
       dateTime: DateTime.parse(map['date_time']),
-      project: map['project'] != null ? Project.fromMap(map['project']) : null,
+      project: map['project'] != null
+          ? ProjectClockify.fromMap(map['project'])
+          : null,
+      taiga: map['taiga'] != null ? Taiga.fromMap(map['taiga']) : null,
     );
   }
 
@@ -46,7 +53,8 @@ class Todo {
         other.checklist == checklist &&
         other.task == task &&
         other.dateTime == dateTime &&
-        other.project == project;
+        other.project == project &&
+        other.taiga == taiga;
   }
 
   @override
@@ -54,6 +62,28 @@ class Todo {
     return checklist.hashCode ^
         task.hashCode ^
         dateTime.hashCode ^
-        project.hashCode;
+        project.hashCode ^
+        taiga.hashCode;
+  }
+
+  Todo copyWith({
+    bool? checklist,
+    String? task,
+    DateTime? dateTime,
+    ProjectClockify? project,
+    Taiga? taiga,
+  }) {
+    return Todo(
+      checklist: checklist ?? this.checklist,
+      task: task ?? this.task,
+      dateTime: dateTime ?? this.dateTime,
+      project: project ?? this.project,
+      taiga: taiga ?? this.taiga,
+    );
+  }
+
+  @override
+  String toString() {
+    return 'Todo(checklist: $checklist, task: $task, dateTime: $dateTime, project: $project, taiga: $taiga)';
   }
 }
