@@ -64,11 +64,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     setupProjectClockfify();
     loginTaiga = await TaigaStorage().readLogin();
     if (loginTaiga != null) {
-      await fetchProjects(
-        context,
-        loginTaiga?.authToken ?? '',
-        loginTaiga?.id ?? 0,
-      );
+      await fetchProjects(context, loginTaiga?.id ?? 0);
     }
   }
 
@@ -89,14 +85,13 @@ class TaigaCubit extends Cubit<TaigaState> {
 
   Future<void> fetchProjects(
     BuildContext context,
-    String token,
     int userId,
   ) async {
     emit(state.copyWith(loadingGlobal: true));
     final cached = await TaigaStorage().readProjects(userId);
     emit(state.copyWith(loadingGlobal: cached.isEmpty, projects: cached));
     try {
-      final projects = await ServiceTaiga.projects(token, userId);
+      final projects = await ServiceTaiga.projects(userId);
       emit(state.copyWith(projects: projects));
     } catch (e) {
       context.showSnackBar(
@@ -121,12 +116,11 @@ class TaigaCubit extends Cubit<TaigaState> {
       selectedProject: project,
       selectedMilestoneId: -1,
     ));
-    await fetchProjectDetail(context, loginTaiga?.authToken ?? '', project);
+    await fetchProjectDetail(context, project);
   }
 
   Future<void> fetchProjectDetail(
     BuildContext context,
-    String token,
     ProjectTaigaResponse project,
   ) async {
     if (state.loadingProjectDetail) return;
@@ -136,7 +130,7 @@ class TaigaCubit extends Cubit<TaigaState> {
         loadingMilestone: cached == null, projectDetail: cached));
     try {
       final projectDetail =
-          await ServiceTaiga.projectDetail(token, project.slug ?? '');
+          await ServiceTaiga.projectDetail(project.slug ?? '');
       emit(state.copyWith(projectDetail: projectDetail));
     } catch (e) {
       context.showSnackBar(
@@ -168,14 +162,9 @@ class TaigaCubit extends Cubit<TaigaState> {
       allTaskChecklist: false,
     ));
     await Future.wait([
-      fetchFilterIssue(
-        context,
-        loginTaiga?.authToken ?? '',
-        projectDetail.id ?? 0,
-      ),
+      fetchFilterIssue(context, projectDetail.id ?? 0),
       fetchIssues(
         context: context,
-        token: loginTaiga?.authToken ?? '',
         page: state.selectedPageIssue,
         projectId: projectDetail.id ?? 0,
       ),
@@ -186,7 +175,6 @@ class TaigaCubit extends Cubit<TaigaState> {
 
   Future<void> fetchFilterIssue(
     BuildContext context,
-    String token,
     int projectId,
   ) async {
     if (state.loadingFilterIssue) return;
@@ -195,7 +183,7 @@ class TaigaCubit extends Cubit<TaigaState> {
     emit(state.copyWith(
         loadingFilterIssue: cached == null, filterIssue: cached));
     try {
-      final filterIssue = await ServiceTaiga.filterIssue(token, projectId);
+      final filterIssue = await ServiceTaiga.filterIssue(projectId);
       emit(state.copyWith(filterIssue: filterIssue));
     } catch (e) {
       context.showSnackBar(
@@ -231,14 +219,9 @@ class TaigaCubit extends Cubit<TaigaState> {
     filterTask();
 
     await Future.wait([
-      fetchMilestone(
-        context,
-        loginTaiga?.authToken ?? '',
-        milestone.id ?? 0,
-      ),
+      fetchMilestone(context, milestone.id ?? 0),
       fetchTasks(
         context,
-        loginTaiga?.authToken ?? '',
         projectDetail.id ?? 0,
         milestone.id ?? 0,
       ),
@@ -282,13 +265,12 @@ class TaigaCubit extends Cubit<TaigaState> {
 
   Future<void> fetchMilestone(
     BuildContext context,
-    String token,
     int milestoneId,
   ) async {
     if (state.loadingMilestone) return;
     emit(state.copyWith(loadingMilestone: true));
     try {
-      final milestone = await ServiceTaiga.milestone(token, milestoneId);
+      final milestone = await ServiceTaiga.milestone(milestoneId);
       emit(state.copyWith(milestone: milestone));
     } catch (e) {
       context.showSnackBar(
@@ -320,14 +302,13 @@ class TaigaCubit extends Cubit<TaigaState> {
 
   Future<void> fetchTasks(
     BuildContext context,
-    String token,
     int projectId,
     int milestoneId,
   ) async {
     if (state.loadingTask) return;
     emit(state.copyWith(loadingTask: true));
     try {
-      final tasks = await ServiceTaiga.tasks(token, projectId, milestoneId);
+      final tasks = await ServiceTaiga.tasks(projectId, milestoneId);
       emit(state.copyWith(tasks: tasks, filteredTasks: tasks));
     } catch (e) {
       context.showSnackBar(
@@ -465,14 +446,12 @@ class TaigaCubit extends Cubit<TaigaState> {
         state.projectDetail != null &&
         state.milestone != null) {
       final taskDetail = await ServiceTaiga.taskDetail(
-        loginTaiga!.authToken ?? '',
         projectId: state.projectDetail?.id ?? 0,
         milestoneId: state.milestone?.id ?? 0,
         ref: task.ref ?? 0,
       );
 
       final success = await ServiceTaiga.changeTaskStatus(
-        loginTaiga!.authToken ?? '',
         taskId: taskDetail.id ?? 0,
         statusId: value?.id ?? 0,
         version: taskDetail.version ?? 0,
@@ -630,7 +609,6 @@ Some other user inside Taiga has changed this before and your changes can’t be
     emit(state.copyWith(loadingContent: true, selectedPageIssue: 1));
     await fetchIssues(
       context: context,
-      token: loginTaiga?.authToken ?? '',
       page: state.selectedPageIssue,
       projectId: state.projectDetail?.id ?? 0,
     );
@@ -639,7 +617,6 @@ Some other user inside Taiga has changed this before and your changes can’t be
 
   Future<void> fetchIssues({
     required BuildContext context,
-    required String token,
     required int page,
     required int projectId,
   }) async {
@@ -647,7 +624,6 @@ Some other user inside Taiga has changed this before and your changes can’t be
     emit(state.copyWith(loadingIssue: true));
     try {
       final issues = await ServiceTaiga.issues(
-        token: token,
         page: page,
         projectId: projectId,
         filterIssue: state.selectedFilterIssue,
@@ -709,13 +685,11 @@ Some other user inside Taiga has changed this before and your changes can’t be
     emit(state.copyWith(loadingContent: true));
     if (loginTaiga != null && state.projectDetail != null) {
       final issueDetail = await ServiceTaiga.issueDetail(
-        loginTaiga!.authToken ?? '',
         projectId: state.projectDetail?.id ?? 0,
         ref: issue.ref ?? 0,
       );
 
       final success = await ServiceTaiga.changeIssueStatus(
-        loginTaiga!.authToken ?? '',
         issueId: issueDetail.id ?? 0,
         statusId: value?.id ?? 0,
         version: issueDetail.version ?? 0,
@@ -743,7 +717,6 @@ Some other user inside Taiga has changed this before and your changes can’t be
     emit(state.copyWith(selectedPageIssue: page));
     fetchIssues(
       context: context,
-      token: loginTaiga?.authToken ?? '',
       page: page,
       projectId: state.projectDetail?.id ?? 0,
     );

@@ -16,6 +16,7 @@ class MainState {
     required this.indexTabPomodoro,
     required this.startDateTimeTask,
     required this.loadingGlobal,
+    required this.backgroundMusicVolume,
   });
 
   final int round;
@@ -32,6 +33,7 @@ class MainState {
   final int indexTabPomodoro;
   final DateTime startDateTimeTask;
   final bool loadingGlobal;
+  final int backgroundMusicVolume;
 
   MainState setFocusTodo(Todo? focusTodo) {
     return MainState(
@@ -49,6 +51,7 @@ class MainState {
       indexTabPomodoro: indexTabPomodoro,
       startDateTimeTask: startDateTimeTask,
       loadingGlobal: loadingGlobal,
+      backgroundMusicVolume: backgroundMusicVolume,
     );
   }
 
@@ -68,6 +71,7 @@ class MainState {
       indexTabPomodoro: indexTabPomodoro,
       startDateTimeTask: startDateTimeTask,
       loadingGlobal: loadingGlobal,
+      backgroundMusicVolume: backgroundMusicVolume,
     );
   }
 
@@ -84,6 +88,7 @@ class MainState {
     int? indexTabPomodoro,
     DateTime? startDateTimeTask,
     bool? loadingGlobal,
+    int? backgroundMusicVolume,
   }) {
     return MainState(
       round: round ?? this.round,
@@ -101,6 +106,8 @@ class MainState {
       indexTabPomodoro: indexTabPomodoro ?? this.indexTabPomodoro,
       startDateTimeTask: startDateTimeTask ?? this.startDateTimeTask,
       loadingGlobal: loadingGlobal ?? this.loadingGlobal,
+      backgroundMusicVolume:
+          backgroundMusicVolume ?? this.backgroundMusicVolume,
     );
   }
 
@@ -122,7 +129,8 @@ class MainState {
         other.loadingAddTimeClockify == loadingAddTimeClockify &&
         other.indexTabPomodoro == indexTabPomodoro &&
         other.startDateTimeTask == startDateTimeTask &&
-        other.loadingGlobal == loadingGlobal;
+        other.loadingGlobal == loadingGlobal &&
+        other.backgroundMusicVolume == backgroundMusicVolume;
   }
 
   @override
@@ -140,6 +148,7 @@ class MainState {
         loadingAddTimeClockify.hashCode ^
         indexTabPomodoro.hashCode ^
         startDateTimeTask.hashCode ^
-        loadingGlobal.hashCode;
+        loadingGlobal.hashCode ^
+        backgroundMusicVolume.hashCode;
   }
 }

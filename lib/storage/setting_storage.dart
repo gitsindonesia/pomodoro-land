@@ -110,4 +110,24 @@ class SettingStorage {
     final data = await storage.read('auto_start_pomodoro');
     return data == 'true';
   }
+
+  Future<void> writeAlarm(String alarm) => storage.write('alarm', alarm);
+  Future<String> readAlarm() async {
+    final data = await storage.read('alarm');
+    return data ?? 'sounds/digital.wav';
+  }
+
+  Future<void> writeAlarmVolume(int volume) =>
+      storage.write('alarm_volume', volume.toString());
+  Future<int> readAlarmVolume() async {
+    final data = await storage.read('alarm_volume');
+    return int.tryParse(data ?? '50') ?? 50;
+  }
+
+  Future<void> writeBackgroundMusicVolume(int volume) =>
+      storage.write('background_music_volume', volume.toString());
+  Future<int> readBackgroundMusicVolume() async {
+    final data = await storage.read('background_music_volume');
+    return int.tryParse(data ?? '50') ?? 50;
+  }
 }

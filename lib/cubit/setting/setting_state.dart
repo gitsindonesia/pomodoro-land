@@ -10,6 +10,8 @@ class SettingState {
     required this.projects,
     required this.autoStartBreak,
     required this.autoStartPomodoro,
+    required this.alarm,
+    required this.alarmVolume,
   });
 
   final bool loadingCheckClockify;
@@ -20,6 +22,8 @@ class SettingState {
   final List<ProjectClockify> projects;
   final bool autoStartBreak;
   final bool autoStartPomodoro;
+  final String alarm;
+  final int alarmVolume;
 
   SettingState copyWith({
     bool? loadingCheckClockify,
@@ -28,6 +32,8 @@ class SettingState {
     bool? loadingProjects,
     bool? autoStartBreak,
     bool? autoStartPomodoro,
+    String? alarm,
+    int? alarmVolume,
   }) {
     return SettingState(
       loadingCheckClockify: loadingCheckClockify ?? this.loadingCheckClockify,
@@ -38,6 +44,8 @@ class SettingState {
       loadingProjects: loadingProjects ?? this.loadingProjects,
       autoStartBreak: autoStartBreak ?? this.autoStartBreak,
       autoStartPomodoro: autoStartPomodoro ?? this.autoStartPomodoro,
+      alarm: alarm ?? this.alarm,
+      alarmVolume: alarmVolume ?? this.alarmVolume,
     );
   }
 
@@ -53,6 +61,8 @@ class SettingState {
       loadingProjects: loadingProjects,
       autoStartBreak: autoStartBreak,
       autoStartPomodoro: autoStartPomodoro,
+      alarm: alarm,
+      alarmVolume: alarmVolume,
     );
   }
 
@@ -68,6 +78,8 @@ class SettingState {
       loadingProjects: loadingProjects,
       autoStartBreak: autoStartBreak,
       autoStartPomodoro: autoStartPomodoro,
+      alarm: alarm,
+      alarmVolume: alarmVolume,
     );
   }
 
@@ -83,7 +95,9 @@ class SettingState {
         other.loadingProjects == loadingProjects &&
         listEquals(other.projects, projects) &&
         other.autoStartBreak == autoStartBreak &&
-        other.autoStartPomodoro == autoStartPomodoro;
+        other.autoStartPomodoro == autoStartPomodoro &&
+        other.alarm == alarm &&
+        other.alarmVolume == alarmVolume;
   }
 
   @override
@@ -95,6 +109,8 @@ class SettingState {
         loadingProjects.hashCode ^
         projects.hashCode ^
         autoStartBreak.hashCode ^
-        autoStartPomodoro.hashCode;
+        autoStartPomodoro.hashCode ^
+        alarm.hashCode ^
+        alarmVolume.hashCode;
   }
 }

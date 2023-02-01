@@ -202,4 +202,68 @@ class LoginTaigaResponse {
         refresh.hashCode ^
         authToken.hashCode;
   }
+
+  LoginTaigaResponse copyWith({
+    int? id,
+    String? username,
+    String? fullName,
+    String? fullNameDisplay,
+    String? color,
+    String? bio,
+    String? lang,
+    String? theme,
+    String? timezone,
+    bool? isActive,
+    String? photo,
+    String? bigPhoto,
+    String? gravatarId,
+    List<String>? roles,
+    int? totalPrivateProjects,
+    int? totalPublicProjects,
+    String? email,
+    String? uuid,
+    DateTime? dateJoined,
+    bool? readNewTerms,
+    bool? acceptedTerms,
+    dynamic maxPrivateProjects,
+    dynamic maxPublicProjects,
+    dynamic maxMembershipsPrivateProjects,
+    dynamic maxMembershipsPublicProjects,
+    bool? verifiedEmail,
+    String? refresh,
+    String? authToken,
+  }) {
+    return LoginTaigaResponse(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
+      fullNameDisplay: fullNameDisplay ?? this.fullNameDisplay,
+      color: color ?? this.color,
+      bio: bio ?? this.bio,
+      lang: lang ?? this.lang,
+      theme: theme ?? this.theme,
+      timezone: timezone ?? this.timezone,
+      isActive: isActive ?? this.isActive,
+      photo: photo ?? this.photo,
+      bigPhoto: bigPhoto ?? this.bigPhoto,
+      gravatarId: gravatarId ?? this.gravatarId,
+      roles: roles ?? this.roles,
+      totalPrivateProjects: totalPrivateProjects ?? this.totalPrivateProjects,
+      totalPublicProjects: totalPublicProjects ?? this.totalPublicProjects,
+      email: email ?? this.email,
+      uuid: uuid ?? this.uuid,
+      dateJoined: dateJoined ?? this.dateJoined,
+      readNewTerms: readNewTerms ?? this.readNewTerms,
+      acceptedTerms: acceptedTerms ?? this.acceptedTerms,
+      maxPrivateProjects: maxPrivateProjects ?? this.maxPrivateProjects,
+      maxPublicProjects: maxPublicProjects ?? this.maxPublicProjects,
+      maxMembershipsPrivateProjects:
+          maxMembershipsPrivateProjects ?? this.maxMembershipsPrivateProjects,
+      maxMembershipsPublicProjects:
+          maxMembershipsPublicProjects ?? this.maxMembershipsPublicProjects,
+      verifiedEmail: verifiedEmail ?? this.verifiedEmail,
+      refresh: refresh ?? this.refresh,
+      authToken: authToken ?? this.authToken,
+    );
+  }
 }

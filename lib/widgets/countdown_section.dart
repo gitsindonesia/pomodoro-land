@@ -20,6 +20,8 @@ class CountdownSection extends StatelessWidget {
     final isStart = context.select((MainCubit bloc) => bloc.state.isStart);
     final backgroundMusic =
         context.select((MainCubit bloc) => bloc.state.backgroundMusic);
+    final backgroundMusicVolume =
+        context.select((MainCubit bloc) => bloc.state.backgroundMusicVolume);
 
     List<DropdownMenuItem<String>> getBackgroundMusic() {
       List<DropdownMenuItem<String>> items = [];
@@ -122,6 +124,33 @@ class CountdownSection extends StatelessWidget {
               ),
             ],
           ),
+          if (backgroundMusic.isNotEmpty)
+            SizedBox(
+              width: 600,
+              child: Row(
+                children: [
+                  const Text('Volume', style: TextStyle(fontSize: 24)),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Slider(
+                      min: 0,
+                      max: 100,
+                      divisions: 100,
+                      activeColor: Colors.black,
+                      inactiveColor: Colors.grey,
+                      label: backgroundMusicVolume.toString(),
+                      value: backgroundMusicVolume.toDouble(),
+                      onChanged: context
+                          .read<MainCubit>()
+                          .onBackgroundMusicVolumeChanged,
+                      onChangeEnd: context
+                          .read<MainCubit>()
+                          .onBackgroundMusicVolumeEndedChanged,
+                    ),
+                  ),
+                ],
+              ),
+            )
         ],
       ),
     );

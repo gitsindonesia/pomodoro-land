@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -20,6 +21,8 @@ class SettingCubit extends Cubit<SettingState> {
           projects: [],
           autoStartBreak: false,
           autoStartPomodoro: false,
+          alarm: '',
+          alarmVolume: 50,
         ));
 
   final storage = SettingStorage();
@@ -31,9 +34,15 @@ class SettingCubit extends Cubit<SettingState> {
 
   String? apiKeyClockify;
 
+  final alarmPlayer = AudioPlayer(playerId: 'alarmPlayer');
+
   void initState(BuildContext context) {}
 
   void initAfterLayout(BuildContext context) async {
+    final alarm = await storage.readAlarm();
+    final alarmVolume = await storage.readAlarmVolume();
+    alarmPlayer.setVolume(alarmVolume / 100);
+
     final defaultPomodoro = await storage.readPomodoroDuration();
     final defaultShortBreak = await storage.readShortBreakDuration();
     final defaultLongBreak = await storage.readLongBreakDuration();
@@ -52,6 +61,8 @@ class SettingCubit extends Cubit<SettingState> {
 
     controllerApiKeyClockify.text = apiKeyClockify ?? '';
     emit(state.copyWith(
+      alarm: alarm,
+      alarmVolume: alarmVolume,
       workspaces: workspaces,
       projects: projects,
       autoStartBreak: autoStartBreak,
@@ -67,6 +78,7 @@ class SettingCubit extends Cubit<SettingState> {
     controllerShortBreak.dispose();
     controllerLongBreak.dispose();
     controllerApiKeyClockify.dispose();
+    alarmPlayer.dispose();
     return super.close();
   }
 
@@ -171,5 +183,26 @@ class SettingCubit extends Cubit<SettingState> {
 
   void onToggleAutoStartPomodoroChanged(bool autoStartPomodoro) async {
     emit(state.copyWith(autoStartPomodoro: autoStartPomodoro));
+  }
+
+  void onAlarmSelected(String? value) async {
+    emit(state.copyWith(alarm: value));
+    if (value != null) {
+      await SettingStorage().writeAlarm(value);
+      if (alarmPlayer.state == PlayerState.playing) {
+        await alarmPlayer.stop();
+      }
+      await alarmPlayer.play(AssetSource(value));
+    }
+  }
+
+  void onAlarmVolumeChanged(double value) {
+    emit(state.copyWith(alarmVolume: value.toInt()));
+  }
+
+  void onAlarmVolumeEndedChanged(double value) async {
+    final alarmVolume = value.toInt();
+    await SettingStorage().writeAlarmVolume(alarmVolume);
+    alarmPlayer.setVolume(value / 100);
   }
 }

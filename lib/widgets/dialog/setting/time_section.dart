@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pomodoro_land/cubit/setting/setting_cubit.dart';
+import 'package:pomodoro_land/widgets/dialog/setting/dropdown_alarm.dart';
 
 import '../../../constants/images.dart';
 
@@ -20,6 +21,9 @@ class TimeSection extends StatelessWidget {
         context.select((SettingCubit bloc) => bloc.state.autoStartBreak);
     final autoStartPomodoro =
         context.select((SettingCubit bloc) => bloc.state.autoStartPomodoro);
+    final alarm = context.select((SettingCubit bloc) => bloc.state.alarm);
+    final alarmVolume =
+        context.select((SettingCubit bloc) => bloc.state.alarmVolume);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,6 +218,30 @@ class TimeSection extends StatelessWidget {
               .read<SettingCubit>()
               .onToggleAutoStartPomodoroChanged(!autoStartPomodoro),
         ),
+        DropdownAlarm(
+          selected: alarm,
+          onAlarmSelected: context.read<SettingCubit>().onAlarmSelected,
+        ),
+        Row(
+          children: [
+            const Text('Alarm Volume', style: TextStyle(fontSize: 24)),
+            const SizedBox(width: 24),
+            Expanded(
+              child: Slider(
+                min: 0,
+                max: 100,
+                divisions: 100,
+                activeColor: Colors.black,
+                inactiveColor: Colors.grey,
+                label: alarmVolume.toString(),
+                value: alarmVolume.toDouble(),
+                onChanged: context.read<SettingCubit>().onAlarmVolumeChanged,
+                onChangeEnd:
+                    context.read<SettingCubit>().onAlarmVolumeEndedChanged,
+              ),
+            ),
+          ],
+        )
       ],
     );
   }

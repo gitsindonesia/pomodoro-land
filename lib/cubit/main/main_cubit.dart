@@ -50,6 +50,7 @@ class MainCubit extends Cubit<MainState> {
           indexTabPomodoro: 0,
           startDateTimeTask: DateTime.now(),
           loadingGlobal: false,
+          backgroundMusicVolume: 50,
         ));
 
   final now = DateTime.now();
@@ -58,8 +59,10 @@ class MainCubit extends Cubit<MainState> {
   Duration defaultShortBreak = const Duration(minutes: 5);
   Duration defaultLongBreak = const Duration(minutes: 15);
 
+  String alarm = 'sounds/digital.wave';
+  int alarmVolume = 50;
   final buttonPlayer = AudioPlayer(playerId: 'buttonPlayer');
-  final belPlayer = AudioPlayer(playerId: 'belPlayer');
+  final alarmPlayer = AudioPlayer(playerId: 'alarmPlayer');
   final backgroundPlayer = AudioPlayer(playerId: 'backgroundPlayer');
   final controller = TextEditingController();
 
@@ -91,6 +94,13 @@ class MainCubit extends Cubit<MainState> {
   }
 
   Future<void> setupSetting() async {
+    alarm = await SettingStorage().readAlarm();
+    alarmVolume = await SettingStorage().readAlarmVolume();
+    alarmPlayer.setVolume(alarmVolume / 100);
+    final backgroundMusicVolume =
+        await SettingStorage().readBackgroundMusicVolume();
+    backgroundPlayer.setVolume(backgroundMusicVolume / 100);
+
     final oldDefaultPomodoro = defaultPomodoro;
     defaultPomodoro = await SettingStorage().readPomodoroDuration();
     defaultShortBreak = await SettingStorage().readShortBreakDuration();
@@ -128,12 +138,12 @@ class MainCubit extends Cubit<MainState> {
     for (var todo in state.todos) {
       if (todo.taiga?.taskTaiga != null) {
         futures.add(
-          setupTaskTaigaStatus(token: loginTaiga?.authToken ?? '', todo: todo),
+          setupTaskTaigaStatus(todo: todo),
         );
       }
       if (todo.taiga?.issueTaiga != null) {
         futures.add(
-          setupIssueTaigaStatus(token: loginTaiga?.authToken ?? '', todo: todo),
+          setupIssueTaigaStatus(todo: todo),
         );
       }
     }
@@ -147,12 +157,8 @@ class MainCubit extends Cubit<MainState> {
     emit(state.copyWith(loadingGlobal: false));
   }
 
-  Future<void> setupTaskTaigaStatus({
-    required String token,
-    required Todo todo,
-  }) async {
+  Future<void> setupTaskTaigaStatus({required Todo todo}) async {
     final taskDetail = await ServiceTaiga.taskDetail(
-      loginTaiga?.authToken ?? '',
       projectId: todo.taiga?.projectDetail.id ?? 0,
       milestoneId: todo.taiga?.taskTaiga?.milestone ?? 0,
       ref: todo.taiga?.taskTaiga?.ref ?? 0,
@@ -166,12 +172,8 @@ class MainCubit extends Cubit<MainState> {
     );
   }
 
-  Future<void> setupIssueTaigaStatus({
-    required String token,
-    required Todo todo,
-  }) async {
+  Future<void> setupIssueTaigaStatus({required Todo todo}) async {
     final issueDetail = await ServiceTaiga.issueDetail(
-      loginTaiga?.authToken ?? '',
       projectId: todo.taiga?.projectDetail.id ?? 0,
       ref: todo.taiga?.issueTaiga?.ref ?? 0,
     );
@@ -184,13 +186,16 @@ class MainCubit extends Cubit<MainState> {
     );
   }
 
-  void handleTimer(Timer timer) {
+  void handleTimer(Timer timer) async {
     if (!state.isStart) return;
     final duration = state.duration - const Duration(seconds: 1);
     emit(state.copyWith(duration: duration));
     if (duration.inSeconds == 0) {
-      belPlayer.play(AssetSource(Sounds.bel));
+      await alarmPlayer.play(AssetSource(alarm));
       if (state.indexTabPomodoro == 0) {
+        if (!autoStartBreak && backgroundPlayer.state == PlayerState.playing) {
+          await backgroundPlayer.stop();
+        }
         final round = state.round + 1;
         final isLongBreak = round % 4 == 0;
         emit(state.copyWith(
@@ -200,6 +205,10 @@ class MainCubit extends Cubit<MainState> {
           isStart: autoStartBreak,
         ));
       } else {
+        if (!autoStartPomodoro &&
+            backgroundPlayer.state == PlayerState.playing) {
+          await backgroundPlayer.stop();
+        }
         emit(state.copyWith(
           duration: defaultPomodoro,
           indexTabPomodoro: 0,
@@ -213,7 +222,10 @@ class MainCubit extends Cubit<MainState> {
     buttonPlayer.play(AssetSource(Sounds.button));
 
     if (state.backgroundMusic.isNotEmpty) {
-      if (!state.isStart && backgroundPlayer.state == PlayerState.stopped) {
+      if (!state.isStart) {
+        if (backgroundPlayer.state == PlayerState.playing) {
+          await backgroundPlayer.stop();
+        }
         await backgroundPlayer.play(UrlSource(state.backgroundMusic));
       } else if (backgroundPlayer.state == PlayerState.playing) {
         await backgroundPlayer.stop();
@@ -405,10 +417,19 @@ class MainCubit extends Cubit<MainState> {
   void onNextPomodoroPressed(BuildContext context) {
     final round = state.round + 1;
     if (state.indexTabPomodoro == 0 && round % 4 == 0) {
+      if (!autoStartBreak && backgroundPlayer.state == PlayerState.playing) {
+        backgroundPlayer.stop();
+      }
       setIndexPomodoro(context, 2, round: round, forceNext: true);
     } else if (state.indexTabPomodoro == 0) {
+      if (!autoStartBreak && backgroundPlayer.state == PlayerState.playing) {
+        backgroundPlayer.stop();
+      }
       setIndexPomodoro(context, 1, round: round, forceNext: true);
     } else {
+      if (!autoStartPomodoro && backgroundPlayer.state == PlayerState.playing) {
+        backgroundPlayer.stop();
+      }
       setIndexPomodoro(context, 0, forceNext: true);
     }
   }
@@ -611,14 +632,12 @@ class MainCubit extends Cubit<MainState> {
     emit(state.copyWith(loadingGlobal: true));
     if (loginTaiga != null) {
       final taskDetail = await ServiceTaiga.taskDetail(
-        loginTaiga!.authToken ?? '',
         projectId: todo.taiga?.projectDetail.id ?? 0,
         milestoneId: todo.taiga?.taskTaiga?.milestone ?? 0,
         ref: todo.taiga?.taskTaiga?.ref ?? 0,
       );
 
       final success = await ServiceTaiga.changeTaskStatus(
-        loginTaiga!.authToken ?? '',
         taskId: taskDetail.id ?? 0,
         statusId: value?.id ?? 0,
         version: taskDetail.version ?? 0,
@@ -704,13 +723,11 @@ Some other user inside Taiga has changed this before and your changes can’t be
     emit(state.copyWith(loadingGlobal: true));
     if (loginTaiga != null) {
       final issueDetail = await ServiceTaiga.issueDetail(
-        loginTaiga!.authToken ?? '',
         projectId: todo.taiga?.projectDetail.id ?? 0,
         ref: todo.taiga?.issueTaiga?.ref ?? 0,
       );
 
       final success = await ServiceTaiga.changeIssueStatus(
-        loginTaiga!.authToken ?? '',
         issueId: issueDetail.id ?? 0,
         statusId: value?.id ?? 0,
         version: issueDetail.version ?? 0,
@@ -738,5 +755,24 @@ Some other user inside Taiga has changed this before and your changes can’t be
       }
     }
     emit(state.copyWith(loadingGlobal: false));
+  }
+
+  void onBackgroundMusicVolumeChanged(double value) {
+    emit(state.copyWith(backgroundMusicVolume: value.toInt()));
+  }
+
+  void onBackgroundMusicVolumeEndedChanged(double value) async {
+    final backgroundMusicVolume = value.toInt();
+    await SettingStorage().writeBackgroundMusicVolume(backgroundMusicVolume);
+    backgroundPlayer.setVolume(value / 100);
+  }
+
+  @override
+  Future<void> close() {
+    buttonPlayer.dispose();
+    controller.dispose();
+    alarmPlayer.dispose();
+    backgroundPlayer.dispose();
+    return super.close();
   }
 }

@@ -1,6 +1,11 @@
 abstract class Sounds {
-  static const String bel = 'sounds/bel.wav';
   static const String button = 'sounds/button.wav';
+  static const Map<String, String> alarms = {
+    'Digital': 'sounds/digital.wav',
+    'Bird': 'sounds/bird.wav',
+    'Waker': 'sounds/waker.wav',
+    'Kitchen': 'sounds/kitchen.wav',
+  };
   static const Map<String, String> urlSounds = {
     'Light Rain Ambient':
         'https://cdn.pixabay.com/download/audio/2022/07/04/audio_f52a5754b1.mp3?filename=light-rain-ambient-114354.mp3',
