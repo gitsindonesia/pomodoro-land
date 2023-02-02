@@ -30,6 +30,12 @@ class _TaigaDashboardState extends State<TaigaDashboard> {
   }
 
   @override
+  void dispose() {
+    cubit.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: cubit,
@@ -57,18 +63,39 @@ class _TaigaDashboardState extends State<TaigaDashboard> {
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                       child: Column(
                         children: [
-                          Row(
-                            children: [
-                              const Text('Taiga Dashboard',
-                                  style: TextStyle(fontSize: 40)),
-                              const Spacer(),
-                              InkWellPressed(
-                                onPressed: () => context
-                                    .read<TaigaCubit>()
-                                    .onClosePressed(context),
-                                child: Image.asset(Images.close, width: 60),
-                              ),
-                            ],
+                          IntrinsicHeight(
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Taiga Dashboard',
+                                  style: TextStyle(fontSize: 40),
+                                ),
+                                const Spacer(),
+                                InkWellPressed(
+                                  onPressed: () => context
+                                      .read<TaigaCubit>()
+                                      .onLogoutPressed(context),
+                                  child: Row(
+                                    children: const [
+                                      Icon(Icons.logout, color: Colors.red),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Logout',
+                                        style: TextStyle(
+                                            fontSize: 24, color: Colors.red),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const VerticalDivider(width: 32),
+                                InkWellPressed(
+                                  onPressed: () => context
+                                      .read<TaigaCubit>()
+                                      .onClosePressed(context),
+                                  child: Image.asset(Images.close, width: 60),
+                                ),
+                              ],
+                            ),
                           ),
                           if (projectsClockify.isNotEmpty) ...[
                             const SizedBox(height: 16),

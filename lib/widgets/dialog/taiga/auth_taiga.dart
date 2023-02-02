@@ -23,6 +23,25 @@ class _AuthTaigaState extends State<AuthTaiga> {
   final password = TextEditingController();
 
   bool loading = false;
+  bool rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.endOfFrame.then((value) async {
+      if (mounted) {
+        final rememberMe = await storage.readRememberMe();
+        setState(() {
+          this.rememberMe = rememberMe;
+        });
+        if (rememberMe) {
+          final body = await storage.readUsername();
+          username.text = body?.username ?? '';
+          password.text = body?.password ?? '';
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -37,14 +56,14 @@ class _AuthTaigaState extends State<AuthTaiga> {
     setState(() {
       loading = true;
     });
+
+    final body = LoginTaigaBody(
+      username: username.text,
+      password: password.text,
+      type: 'normal',
+    );
     try {
-      loginTaiga = await ServiceTaiga.login(
-        LoginTaigaBody(
-          username: username.text,
-          password: password.text,
-          type: 'normal',
-        ),
-      );
+      loginTaiga = await ServiceTaiga.login(body);
     } catch (e) {
       context.showSnackBar(
         SnackBar(
@@ -58,6 +77,7 @@ class _AuthTaigaState extends State<AuthTaiga> {
     }
 
     if (loginTaiga != null) {
+      await storage.writeUsername(body);
       await storage.writeLogin(loginTaiga);
       // ignore: use_build_context_synchronously
       Navigator.of(context).pop(loginTaiga);
@@ -133,6 +153,19 @@ class _AuthTaigaState extends State<AuthTaiga> {
                     fit: BoxFit.fitWidth,
                   ),
                   const SizedBox(height: 32),
+                  CheckboxListTile(
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: const Text('Remember Me'),
+                    contentPadding: EdgeInsets.zero,
+                    activeColor: Colors.black,
+                    value: rememberMe,
+                    onChanged: (value) async {
+                      await storage.writeRememberMe(value ?? false);
+                      setState(() {
+                        rememberMe = value ?? false;
+                      });
+                    },
+                  ),
                   Align(
                     alignment: Alignment.centerRight,
                     child: loading

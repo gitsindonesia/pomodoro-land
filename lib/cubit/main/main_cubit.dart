@@ -491,6 +491,7 @@ class MainCubit extends Cubit<MainState> {
   }
 
   void onTaigaPressed(BuildContext context) async {
+    loginTaiga = await TaigaStorage().readLogin();
     if (loginTaiga == null) {
       final response = await showDialog(
         context: context,

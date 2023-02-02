@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:pomodoro_land/model/taiga/body/login_taiga_body.dart';
 import 'package:pomodoro_land/model/taiga/response/filter_issue_response.dart';
 import 'package:pomodoro_land/model/taiga/response/login_taiga_response.dart';
 import 'package:pomodoro_land/model/taiga/response/milestone_response.dart';
@@ -20,6 +21,23 @@ class TaigaStorage {
 
   final storage = CacheStorage('taiga');
 
+  Future<void> writeUsername(LoginTaigaBody body) =>
+      storage.write('username', body.toJson());
+  Future<LoginTaigaBody?> readUsername() async {
+    final data = await storage.read('username');
+    if (data == null) return null;
+    return LoginTaigaBody.fromJson(data);
+  }
+
+  Future<void> writeRememberMe(bool rememberMe) =>
+      storage.write('remember_me', rememberMe.toString());
+  Future<bool> readRememberMe() async {
+    final data = await storage.read('remember_me');
+    return data == 'true';
+  }
+
+  Future<void> removeUsername() => storage.delete('username');
+
   Future<void> writeLogin(LoginTaigaResponse response) =>
       storage.write('user', response.toJson());
   Future<LoginTaigaResponse?> readLogin() async {
@@ -27,6 +45,8 @@ class TaigaStorage {
     if (data == null) return null;
     return LoginTaigaResponse.fromJson(data);
   }
+
+  Future<void> removeLogin() => storage.delete('user');
 
   Future<void> writeProjects(int userId, List<ProjectTaigaResponse> projects) =>
       storage.write('projects_$userId',

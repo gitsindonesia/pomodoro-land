@@ -729,4 +729,13 @@ Some other user inside Taiga has changed this before and your changes can’t be
       emit(state.copyWith(issueToTodo: state.issues, allIssueChecklist: true));
     }
   }
+
+  void onLogoutPressed(BuildContext context) async {
+    final rememberMe = await TaigaStorage().readRememberMe();
+    if (!rememberMe) {
+      await TaigaStorage().removeUsername();
+    }
+    await TaigaStorage().removeLogin();
+    Navigator.of(context).pop();
+  }
 }

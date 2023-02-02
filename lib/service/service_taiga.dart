@@ -43,28 +43,39 @@ abstract class ServiceTaiga {
     return LoginTaigaResponse.fromJson(response.body);
   }
 
-  static Future<RefreshResponse> refresh(String refresh) async {
+  static Future<LoginTaigaResponse?> refresh(
+      LoginTaigaResponse? loginResponse) async {
     final response = await http.post(
       taigaUrl('/auth/refresh'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'refresh': refresh}),
+      body: jsonEncode({'refresh': loginResponse?.refresh}),
     );
-    return RefreshResponse.fromJson(response.body);
+    if (response.statusCode == 401) {
+      final body = await TaigaStorage().readUsername();
+      if (body == null) {
+        throw Exception('Cannot refresh please logout and login again.');
+      }
+      final fetchLogin = await login(body);
+      return fetchLogin;
+    }
+    final refreshResponse = RefreshResponse.fromJson(response.body);
+    return loginResponse?.copyWith(
+      authToken: refreshResponse.authToken,
+      refresh: refreshResponse.refresh,
+    );
   }
 
   static Future<http.Response> fetchWithAuth(
     Future<http.Response> Function(String token) fetch,
   ) async {
-    final login = await TaigaStorage().readLogin();
+    LoginTaigaResponse? login = await TaigaStorage().readLogin();
     http.Response response = await fetch(login?.authToken ?? '');
     if (response.statusCode == 401) {
-      final refreshResponse = await refresh(login?.refresh ?? '');
+      login = await refresh(login);
       if (login != null) {
-        await TaigaStorage().writeLogin(login.copyWith(
-            authToken: refreshResponse.authToken,
-            refresh: refreshResponse.refresh));
+        await TaigaStorage().writeLogin(login);
       }
-      response = await fetch(refreshResponse.authToken ?? '');
+      response = await fetch(login?.authToken ?? '');
     }
     return response;
   }
